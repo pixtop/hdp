@@ -1,3 +1,5 @@
+package hdfs;
+
 interface NameNode {
 
 }
