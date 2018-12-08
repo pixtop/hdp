@@ -85,6 +85,8 @@ class NameNode {
 	
 	public static void main(String[] args) {
 		NameNode namenode = new NameNode();
+		SlaveKeepAlive keepalive = new SlaveKeepAlive(namenode);
+		keepalive.start();
 		
 		
 	}

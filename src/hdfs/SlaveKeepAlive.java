@@ -16,10 +16,6 @@ import java.util.concurrent.TimeUnit;
 // Ces messages doivent être envoyés sur le port 8080
 public class SlaveKeepAlive extends Thread{
 	private NameNode master;
-	public NameNode getMaster() {
-		return master;
-	}
-
 	private ArrayList<Inet4Address> dataNodes;
 	
 	public SlaveKeepAlive(NameNode namenode) {
@@ -39,9 +35,8 @@ public class SlaveKeepAlive extends Thread{
 			serveur = new ServerSocket(8080);
 			while (true) {
 				// Si on reçoi un message de keepAlive d'un node on l'enleve de la liste
-				Slave sl = new Slave(serveur.accept());
-				this.removeDataNode(sl.reception());
-				
+				Slave sl = new Slave(serveur.accept(),this);
+				sl.start();			
 			}	
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -49,28 +44,40 @@ public class SlaveKeepAlive extends Thread{
 		
     }
 	
-	private void removeDataNode(Inet4Address addr) {
-		if (addr!=null) {
-			Iterator<Inet4Address> i = this.dataNodes.iterator();
-			while (i.hasNext()) {
-				Inet4Address a = i.next();
-				if (a.equals(addr)) {
-					this.dataNodes.remove(a);
-					break;
+	protected void removeDataNode(Inet4Address addr) {
+		synchronized(this.dataNodes) {
+			if (addr!=null) {
+				Iterator<Inet4Address> i = this.dataNodes.iterator();
+				while (i.hasNext()) {
+					Inet4Address a = i.next();
+					if (a.equals(addr)) {
+						this.dataNodes.remove(a);
+						break;
+					}
 				}
 			}
 		}
 	}
 
-	public ArrayList<Inet4Address> getDataNodes() {
-		return dataNodes;
+	protected ArrayList<Inet4Address> getDataNodes() {
+		synchronized(this.dataNodes) {
+			return dataNodes;
+		}
 	}
 
-	public void setDataNodes(ArrayList<Inet4Address> dataNodes) {
-		this.dataNodes = dataNodes;
+	protected void setDataNodes(ArrayList<Inet4Address> dataNodes) {
+		synchronized(this.dataNodes) {
+			this.dataNodes = dataNodes;
+		}
 	}
 	
-} class KeepAlive implements Runnable {
+	protected NameNode getMaster() {
+		return master;
+	}
+	
+} 
+
+class KeepAlive implements Runnable {
 	SlaveKeepAlive slave;
 	
 	public KeepAlive(SlaveKeepAlive slave) {
@@ -85,27 +92,37 @@ public class SlaveKeepAlive extends Thread{
 			
 		}
 		// On remet dataNodes à 0 et on recommence
-		synchronized(slave.getDataNodes()) {
-			slave.setDataNodes(slave.getMaster().getDataNodes());
-		}
+		slave.setDataNodes(slave.getMaster().getDataNodes());
+
 	}
 } 
+
 class Slave extends Thread {
-	 Socket ssock;
+	 private Socket ssock;
+	 private SlaveKeepAlive slave;
 	 
-	 public Slave(Socket s) {
+	 public Slave(Socket s,SlaveKeepAlive slave) {
 		 this.ssock = s;
 	 }
-	 public Inet4Address reception() {
+	 
+	 public void run() {
 		ObjectInputStream ois;
-		Inet4Address addr = null;
 		try {
 			ois = new ObjectInputStream(ssock.getInputStream());
-			addr = (Inet4Address)ois.readObject();
+			Inet4Address addr = (Inet4Address)ois.readObject();
 			ssock.close();
+			if (!slave.getMaster().estPresente(addr)) {
+				// Si c'est une nouvelle adresse on l'ajoute
+				slave.getMaster().addDataNode(addr);
+			} else {
+				// Sinon on la supprime de la liste des DataNodes qui n'ont pas 
+				// répondu
+				slave.removeDataNode(addr);	
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return addr;
-	}
+	 }	 
+
 }
