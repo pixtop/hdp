@@ -1,5 +1,6 @@
 package hdfs;
 
+import java.io.Serializable;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -7,7 +8,7 @@ import java.util.Iterator;
 
 // Pistes d'amélioration --> changer le boolean de liste_fichiers_occupés en une enumeration pour permettre
 // de différencier l'occupation par écriture et lecture afin de faire de la lecture en parallèle
-class NameNode {
+class NameNode implements Serializable {
 	
 	private ArrayList<InfoFichier> catalogue;
 	private ArrayList<Inet4Address> liste_DataNodes;
@@ -85,6 +86,7 @@ class NameNode {
 	
 	public static void main(String[] args) {
 		NameNode namenode = new NameNode();
+		// SlaveKeepAlive ajoute/supprime les DataNodes de la liste des DataNodes de NameNode
 		SlaveKeepAlive keepalive = new SlaveKeepAlive(namenode);
 		keepalive.start();
 		
