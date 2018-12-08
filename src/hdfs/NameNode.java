@@ -6,26 +6,26 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-// Pistes d'amélioration --> changer le boolean de liste_fichiers_occupés en une enumeration pour permettre
-// de différencier l'occupation par écriture et lecture afin de faire de la lecture en parallèle
+// Pistes d'amï¿½lioration --> changer le boolean de liste_fichiers_occupï¿½s en une enumeration pour permettre
+// de diffï¿½rencier l'occupation par ï¿½criture et lecture afin de faire de la lecture en parallï¿½le
 class NameNode implements Serializable {
 	
 	private ArrayList<InfoFichier> catalogue;
 	private ArrayList<Inet4Address> liste_DataNodes;
-	private Hashtable<String,Boolean> liste_fichiers_occupés;
+	private Hashtable<String,Boolean> liste_fichiers_occupÃ©s;
 	
 	public NameNode() {
 		this.catalogue = new ArrayList<InfoFichier>();
 		this.liste_DataNodes = new ArrayList<Inet4Address>();
-		this.liste_fichiers_occupés = new Hashtable<String,Boolean>();
+		this.liste_fichiers_occupÃ©s = new Hashtable<String,Boolean>();
 	}
 	
 	// Permet d'ajouter un fichier au catalogue de NameNode si il n'est
-	// pas déjà présent, il est immédiatement disponible.
+	// pas dï¿½jï¿½ prï¿½sent, il est immï¿½diatement disponible.
 	public void ajouterFichier(InfoFichier fichier) {
-		if (!this.liste_fichiers_occupés.containsKey(fichier.getNom())) {
+		if (!this.liste_fichiers_occupÃ©s.containsKey(fichier.getNom())) {
 			this.catalogue.add(fichier);
-			this.liste_fichiers_occupés.put(fichier.getNom(), false);
+			this.liste_fichiers_occupÃ©s.put(fichier.getNom(), false);
 		}
 		
 	}
@@ -43,14 +43,14 @@ class NameNode implements Serializable {
 		return null;
 	}
 	
-	// Retourne true si le fichier de nom "nom" est occupé, false sinon
-	public boolean est_occupé(String nom) {
-		return liste_fichiers_occupés.get(nom);
+	// Retourne true si le fichier de nom "nom" est occupï¿½, false sinon
+	public boolean est_occupÃ©(String nom) {
+		return liste_fichiers_occupÃ©s.get(nom);
 	}
 
 	// Permet de donner le status du fichier de nom "nom"
 	public void setStatus(String nom, Boolean status) {
-		this.liste_fichiers_occupés.replace(nom, status);
+		this.liste_fichiers_occupÃ©s.replace(nom, status);
 	}
 	
 	
