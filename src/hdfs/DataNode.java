@@ -1,4 +1,6 @@
 package hdfs;
 
-public interface DataNode {
+interface DataNode {
+	
+	
 }
