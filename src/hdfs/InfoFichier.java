@@ -5,7 +5,7 @@ import java.util.Hashtable;
 
 public class InfoFichier {
 	
-	private Hashtable<Integer,Inet4Address> chunks; // Clef -> ChunkHandle, Valeur -> Adresse où se trouve le chunk
+	private Hashtable<Integer,Inet4Address> chunks; // Clef -> ChunkHandle, Valeur -> Adresse trouve le chunk
 	private String nom; // Nom du fichier
 	private int taille; // Taille du fichier
 	

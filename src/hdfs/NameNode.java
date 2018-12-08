@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-// Pistes d'am�lioration --> changer le boolean de liste_fichiers_occup�s en une enumeration pour permettre
-// de diff�rencier l'occupation par �criture et lecture afin de faire de la lecture en parall�le
+// Pistes d'amelioration --> changer le boolean de liste_fichiers_occupes en une enumeration pour permettre
+// de differencier l'occupation par ecriture et lecture afin de faire de la lecture en parallele
 class NameNode implements Serializable {
 	
 	private ArrayList<InfoFichier> catalogue;
@@ -21,7 +21,7 @@ class NameNode implements Serializable {
 	}
 	
 	// Permet d'ajouter un fichier au catalogue de NameNode si il n'est
-	// pas d�j� pr�sent, il est imm�diatement disponible.
+	// pas deja present, il est immediatement disponible.
 	public void ajouterFichier(InfoFichier fichier) {
 		if (!this.liste_fichiers_occupés.containsKey(fichier.getNom())) {
 			this.catalogue.add(fichier);
@@ -43,7 +43,7 @@ class NameNode implements Serializable {
 		return null;
 	}
 	
-	// Retourne true si le fichier de nom "nom" est occup�, false sinon
+	// Retourne true si le fichier de nom "nom" est occupe, false sinon
 	public boolean est_occupé(String nom) {
 		return liste_fichiers_occupés.get(nom);
 	}
