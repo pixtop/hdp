@@ -16,6 +16,7 @@ import map.MapReduce;
 public class Job implements JobInterface{
 	
 	private Format.Type inputformat;
+	private Format.Type outputformat;
 	private String inputfname;
 	
 	public void setInputFormat(Format.Type format) {
@@ -35,21 +36,37 @@ public class Job implements JobInterface{
 			//	System.out.print("Connexion à "+"//" + liste_addr.get(i).toString()+":"+port+"/Daemon_dataNode");
 			//	Daemon obj = (Daemon) Naming.lookup("//" + liste_addr.get(i).toString()+":"+port+"/Daemon_dataNode");
 				Daemon obj = (Daemon) Naming.lookup("//" + "localhost:"+port+"/Daemon_dataNode");
-				
+				Format ti=null;
+				Format to=null;
 				if (this.inputformat == Format.Type.LINE) {
-					System.out.println("Runmap !");
-					LineFormat lf = new LineFormat();
-					lf.setFname(this.inputfname);
-					obj.runMap(mr,lf , lf, new CallBack());
-				
+					ti = new LineFormat();
+					ti.setFname(this.inputfname);
 				} else if (this.inputformat == Format.Type.KV){
-					obj.runMap(mr, new KVFormat(), new KVFormat(), new CallBack());
+					ti = new KVFormat();
+					ti.setFname(this.inputfname);
 				}
+				
+				if (this.outputformat == Format.Type.LINE) {
+					to = new LineFormat();
+					to.setFname(this.inputfname);
+				
+				} else if (this.outputformat == Format.Type.KV){
+					to = new KVFormat();
+					to.setFname(this.inputfname);
+				}
+				
+				obj.runMap(mr,ti ,to , new CallBack());
 				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+	}
+	public Format.Type getOutputformat() {
+		return outputformat;
+	}
+	public void setOutputformat(Format.Type outputformat) {
+		this.outputformat = outputformat;
 	}
 
 } 

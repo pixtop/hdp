@@ -88,7 +88,7 @@ public class LineFormat implements Format, Serializable {
 		
     }
     
-  /*
+  /*  TESTS
     public static void main(String[] args) {
     	LineFormat l = new LineFormat();
     	l.setFname("test.txt");

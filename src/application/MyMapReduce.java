@@ -33,7 +33,10 @@ public class MyMapReduce implements MapReduce, Serializable{
 				else hm.put(tok, 1);
 			}
 		}
-		for (String k : hm.keySet()) writer.write(new KV(k,hm.get(k).toString()));
+		
+		for (String k : hm.keySet()) {
+			writer.write(new KV(k,hm.get(k).toString()));
+		}
 	}
 	
 	public void reduce(FormatReader reader, FormatWriter writer) {
@@ -50,6 +53,7 @@ public class MyMapReduce implements MapReduce, Serializable{
 		Job j = new Job();
         j.setInputFormat(Format.Type.LINE);
         j.setInputFname(args[0]);
+        j.setOutputformat(Format.Type.KV);
        long t1 = System.currentTimeMillis();
 		j.startJob(new MyMapReduce());
 		long t2 = System.currentTimeMillis();
