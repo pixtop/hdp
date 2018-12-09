@@ -1,5 +1,6 @@
 package application;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -11,8 +12,13 @@ import formats.FormatReader;
 import formats.FormatWriter;
 import formats.KV;
 
-public class MyMapReduce implements MapReduce {
-	private static final long serialVersionUID = 1L;
+public class MyMapReduce implements MapReduce, Serializable{
+
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 771177188680600097L;
 
 	// MapReduce program that computes word counts
 	public void map(FormatReader reader, FormatWriter writer) {

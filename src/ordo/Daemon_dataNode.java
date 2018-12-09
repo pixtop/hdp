@@ -20,6 +20,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 
 	@Override
 	public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) throws RemoteException {
+		System.out.println("RunMap recu !");
 		m.map(reader, writer);
 		// TODO: utliser le callback
 		cb.run();
@@ -40,6 +41,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 			Daemon obj = new Daemon_dataNode();
 			String URL = "//" + InetAddress.getLocalHost().getHostAddress()+":"+port+"/Daemon_dataNode";
 			Naming.rebind(URL,obj);
+			System.out.println("Bound in registry.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

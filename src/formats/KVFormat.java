@@ -1,8 +1,15 @@
 package formats;
 
-public class KVFormat implements Format{
+import java.io.Serializable;
 
-    private OpenMode mode;
+public class KVFormat implements Format, Serializable{
+
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6856607893995314001L;
+	private OpenMode mode;
     private String fname;
 
     public KVFormat() {
