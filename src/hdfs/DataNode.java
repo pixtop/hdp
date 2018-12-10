@@ -3,8 +3,6 @@ package hdfs;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Paths;
@@ -43,8 +41,22 @@ public class DataNode {
         throw new FileNotFoundException();
     }
 
-	public void delChunk(String chunk) {
-
+	public void delChunk(String chunk) throws IOException {
+        File[] files = this.dir.listFiles();
+        if (files == null) {
+            throw new FileNotFoundException();
+        }
+        for (File f : files) {
+            if (f.isFile() && f.getName().equals(chunk)) {
+                if (f.delete()) {
+                    return;
+                }
+                else {
+                    throw new IOException();
+                }
+            }
+        }
+        throw new FileNotFoundException();
     }
 
     public void addChunk(String chunk) {
