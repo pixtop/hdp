@@ -1,1 +1,2 @@
 -> accès lecture et écriture (par SlaveKeppAlive) des liste_DataNodes du NameNode = accès concurrent, englober dans un bloc synchronise pour éviter des pb
+-> Le NameNode node doit régulièrement sauvegarder ses données en mémoire, si jamais panne (à faire dans le hdfsServer surement)
