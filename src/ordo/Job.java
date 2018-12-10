@@ -37,7 +37,8 @@ public class Job implements JobInterface{
 	public void startJob (MapReduce mr) {
 		ArrayList<String> liste_addr= new ArrayList<String>();
 		liste_addr.add("Galilee");
-		liste_addr.add("localhost");
+		liste_addr.add("Archimede");
+		String addr_reduce = "Archimede";
 		int NB_NODES = liste_addr.size();
 		int port = 6060; // port pour remote
 		int port2 = 6660; // port pour transfert de données entre les datanodes (pour faire le reduce)
@@ -62,17 +63,26 @@ public class Job implements JobInterface{
 				e.printStackTrace();
 			}
 		}
+		System.out.println("FINMAP");
 
 		// On obtient l'addresse du datanode qui fait le reduce
-		String addr_reduce = "localhost";
+
 		int i_reduce = 0;
 		Daemon obj;
-		try {
-			obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port+"/Daemon_dataNode");
-			obj.recevoir(NB_NODES-1, port2, this.inputfname+"-rec");
-		} catch (MalformedURLException | RemoteException | NotBoundException e1) {
-			e1.printStackTrace();
-		}
+
+		Thread thread = new Thread(){
+		    @Override
+			public void run(){
+		    	try {
+					Daemon obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port+"/Daemon_dataNode");
+					obj.recevoir(NB_NODES-1, port2, inputfname);
+				} catch (MalformedURLException | RemoteException | NotBoundException e1) {
+					e1.printStackTrace();
+				}
+		    }
+		  };
+		  thread.start();
+
 
 
 		SlaveEnvoyerVers[] slaves_e = new SlaveEnvoyerVers[NB_NODES];
@@ -100,6 +110,11 @@ public class Job implements JobInterface{
 			}
 
 		}
+		try {
+			thread.join();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 
 		try {
 			obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port+"/Daemon_dataNode");
@@ -110,6 +125,7 @@ public class Job implements JobInterface{
 			} else if (this.outputformat == Format.Type.KV){
 				t = new KVFormat();
 			}
+			t.setFname(this.inputfname+"-rec");
 			obj.runReduce(mr, t, t, new CallBack());
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			e.printStackTrace();

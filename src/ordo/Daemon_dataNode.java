@@ -63,6 +63,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 
 	@Override
 	public void recevoir(int nbData,int port,String fname) throws RemoteException{
+		System.out.println("Recevoir en cours");
 		ServerSocket ss;
 		try {
 			ss = new ServerSocket(port);
@@ -74,6 +75,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("Recevoir fin");
 
 	}
 

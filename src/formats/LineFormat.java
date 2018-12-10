@@ -1,6 +1,9 @@
 package formats;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
@@ -11,13 +14,13 @@ import config.Project;
 public class LineFormat implements Format, Serializable {
 
     /**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -9146586647773108023L;
 	private OpenMode mode;
     private String fname;
     private int ligne_rendu;
-    
+
     public LineFormat() {
     	ligne_rendu = 0;
     }
@@ -49,10 +52,10 @@ public class LineFormat implements Format, Serializable {
 
     @Override
     public KV read() {
-    	System.out.println("Accesing:"+Project.PATH+"data\\"+fname);
+    	System.out.println("Accesing:"+Project.PATH+"data/"+fname);
     	BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader(Project.PATH+"data\\"+fname));
+			br = new BufferedReader(new FileReader(Project.PATH+"data/"+fname));
 			for (int i=0;i<ligne_rendu;i++) {
 				br.readLine();
 	    	}
@@ -85,17 +88,17 @@ public class LineFormat implements Format, Serializable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
     }
-    
+
   /*  TESTS
     public static void main(String[] args) {
     	LineFormat l = new LineFormat();
     	l.setFname("test.txt");
     	l.write(l.read());
     	l.write(l.read());
-    	
+
     } */
-  
-    
+
+
 }

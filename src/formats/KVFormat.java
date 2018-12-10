@@ -52,10 +52,10 @@ public class KVFormat implements Format, Serializable{
 
     @Override
     public KV read() {
-    	System.out.println("Accesing:"+Project.PATH+"data\\"+fname);
+    	System.out.println("Accesing:"+Project.PATH+"data/"+fname);
     	BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader(Project.PATH+"data\\"+fname));
+			br = new BufferedReader(new FileReader(Project.PATH+"data/"+fname));
 			for (int i=0;i<ligne_rendu;i++) {
 				br.readLine();
 	    	}

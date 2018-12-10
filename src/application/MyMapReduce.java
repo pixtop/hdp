@@ -48,6 +48,10 @@ public class MyMapReduce implements MapReduce, Serializable{
 			if (hm.containsKey(kv.k)) hm.put(kv.k, hm.get(kv.k)+Integer.parseInt(kv.v));
 			else hm.put(kv.k, Integer.parseInt(kv.v));
 		}
+		while ((kv = reader.read()) != null) {
+			if (hm.containsKey(kv.k)) hm.put(kv.k, hm.get(kv.k)+Integer.parseInt(kv.v));
+			else hm.put(kv.k, Integer.parseInt(kv.v));
+		}
 		for (String k : hm.keySet()) writer.write(new KV(k,hm.get(k).toString()));
 	}
 
