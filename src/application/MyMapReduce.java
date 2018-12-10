@@ -44,13 +44,11 @@ public class MyMapReduce implements MapReduce, Serializable{
 	public void reduce(FormatReader reader, FormatWriter writer) {
                 Map<String,Integer> hm = new HashMap<>();
 		KV kv;
-		while ((kv = reader.read()) != null) {
-			if (hm.containsKey(kv.k)) hm.put(kv.k, hm.get(kv.k)+Integer.parseInt(kv.v));
-			else hm.put(kv.k, Integer.parseInt(kv.v));
-		}
-		while ((kv = reader.read()) != null) {
-			if (hm.containsKey(kv.k)) hm.put(kv.k, hm.get(kv.k)+Integer.parseInt(kv.v));
-			else hm.put(kv.k, Integer.parseInt(kv.v));
+		for (int i=0;i<10;i++) { // obligé de faire ça car ia des nulls qui se glissent dans le fichier???
+			while ((kv = reader.read()) != null) {
+				if (hm.containsKey(kv.k)) hm.put(kv.k, hm.get(kv.k)+Integer.parseInt(kv.v));
+				else hm.put(kv.k, Integer.parseInt(kv.v));
+			}
 		}
 		for (String k : hm.keySet()) writer.write(new KV(k,hm.get(k).toString()));
 	}
