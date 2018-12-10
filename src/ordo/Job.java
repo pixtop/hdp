@@ -1,6 +1,5 @@
 package ordo;
 
-import java.net.Inet4Address;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -36,16 +35,19 @@ public class Job implements JobInterface{
 	}
 	@Override
 	public void startJob (MapReduce mr) {
-		ArrayList<Inet4Address> liste_addr= new ArrayList<Inet4Address>();
+		ArrayList<String> liste_addr= new ArrayList<String>();
+		liste_addr.add("Galilee");
+		liste_addr.add("localhost");
 		int NB_NODES = liste_addr.size();
-		int port = 6060;
+		int port = 6060; // port pour remote
+		int port2 = 6660; // port pour transfert de données entre les datanodes (pour faire le reduce)
 		SlaveMap[] slaves = new SlaveMap[NB_NODES];
 
 		// TODO: changer la valeur de port / ajouter un call pour obtenir la liste des addresses / ajouter un vrai callback
 		for (int i=0; i<NB_NODES; i++) {
 			try {
 			//	Daemon obj = (Daemon) Naming.lookup("//" + "localhost:"+port+"/Daemon_dataNode");
-				slaves[i] = new SlaveMap(liste_addr.get(i).toString(),port,this,mr,new CallBack());
+				slaves[i] = new SlaveMap(liste_addr.get(i),port,this,mr,new CallBack());
 				slaves[i].start();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -62,24 +64,43 @@ public class Job implements JobInterface{
 		}
 
 		// On obtient l'addresse du datanode qui fait le reduce
-				String addr_reduce = "";
+		String addr_reduce = "localhost";
+		int i_reduce = 0;
+		Daemon obj;
+		try {
+			obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port+"/Daemon_dataNode");
+			obj.recevoir(NB_NODES-1, port2, this.inputfname+"-rec");
+		} catch (MalformedURLException | RemoteException | NotBoundException e1) {
+			e1.printStackTrace();
+		}
 
+
+		SlaveEnvoyerVers[] slaves_e = new SlaveEnvoyerVers[NB_NODES];
 		// Il faut tout envoyer vers le reducer
 		for (int i=0; i<NB_NODES; i++) {
 			if (liste_addr.get(i).toString() != addr_reduce) {
 				try {
-					//	Daemon obj = (Daemon) Naming.lookup("//" + "localhost:"+port+"/Daemon_dataNode");
-					slaves[i] = new SlaveEnvoyerVers(liste_addr.get(i).toString(),port,this,mr,new CallBack());
-					slaves[i].start();
+					slaves_e[i] = new SlaveEnvoyerVers(liste_addr.get(i),addr_reduce,port,this.inputfname+"-rec",port2);
+					slaves_e[i].start();
 				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				i_reduce = i;
+			}
+		}
+
+		for (int i=0; i<NB_NODES; i++) {
+			if (i!= i_reduce) {
+				try {
+					slaves_e[i].join();
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 
 		}
 
-
-		Daemon obj;
 		try {
 			obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port+"/Daemon_dataNode");
 			System.out.print("Connecté à "+"//" + addr_reduce+":"+port+"/Daemon_dataNode"+" pour reduce");

@@ -19,9 +19,12 @@ import map.MapReduce;
 public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 
 
-	public Daemon_dataNode() throws RemoteException {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1518235174567752969L;
 
-	}
+	public Daemon_dataNode() throws RemoteException {}
 
 	@Override
 	public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) throws RemoteException {
@@ -38,7 +41,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 	}
 
 	@Override
-	public void envoyerVers(String addr,int port,String name){
+	public void envoyerVers(String addr,int port,String name) throws RemoteException{
 
 		try {
 			Socket s = new Socket(addr,port);
@@ -49,6 +52,8 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 			while ((kv = reader.read()) != null) {
 				ois.writeObject(kv);
 			}
+			ois.writeObject(null);
+			s.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -56,12 +61,13 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 
 	}
 
-	public void recevoir(int nbData,int port){
+	@Override
+	public void recevoir(int nbData,int port,String fname) throws RemoteException{
 		ServerSocket ss;
 		try {
 			ss = new ServerSocket(port);
 			for(int i=0;i<nbData;i++){
-				SlaveRecevoir sl = new SlaveRecevoir(ss.accept());
+				SlaveRecevoir sl = new SlaveRecevoir(ss.accept(),fname);
 				sl.start();
 			}
 		} catch (IOException e) {
