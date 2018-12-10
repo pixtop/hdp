@@ -3,12 +3,14 @@ package hdfs;
 import java.lang.*;
 import java.net.*;
 import java.io.*;
-import java.util.Scanner;
+import java.util.*;
+import formats.*;
+import exceptions.*;
 
 // Serveur hdfs à lancer sur chaque machine, lance un dataNode et optionnellement un nameNode
 public class HdfsServer {
 
-  private static int port = 4242;
+  public static int port = 4242;
   private static String usage = "Usage : java HdfsServer [nameNode] [-f saved_config_file]";
   private static String config_file_output = "HdfsServer.conf";
   private static NameNode name;
@@ -23,15 +25,94 @@ public class HdfsServer {
     }
 
     public void run() {
+
+      // Création streams
+      ObjectOutputStream oos = null;
+      ObjectInputStream ois = null;
+      try {
+        oos = new ObjectOutputStream(this.socket.getOutputStream());
+        ois = new ObjectInputStream(this.socket.getInputStream());
+      } catch (IOException e) {
+        System.err.println("Error while opening socket : " + e.getMessage());
+      }
+
+      // Affichage nouvelle connexion
       InetAddress remote = ((InetSocketAddress)this.socket.getRemoteSocketAddress()).getAddress();
       System.out.println("Connexion received from " + remote.getHostAddress());
 
-      // Traitement TODO
+      // Récupération requête
+      HdfsQuery query = null;
+      try {
+        if(ois != null)query = (HdfsQuery)ois.readObject();
+      } catch (StreamCorruptedException e) {
+        System.err.println("Wrong message format error : " + e.getMessage());
+      } catch (Exception e) {
+        System.err.println("Message format error : " + e.getMessage());
+      }
+
+      // traitement requête
+      if(query != null) {
+        try {
+          switch(query.getCmd()) {
+            case GET_FILE:
+              System.out.println(" |-> Request dataNodes handling file " + query.getName());
+              if(HdfsServer.name != null) {
+                InfoFichier info = HdfsServer.name.getInfoFichier(query.getName());
+                if(info != null) {
+                  oos.writeObject(new HdfsResponse(info.getChunks(), null));
+                  System.out.println(" |-> Chunks returned");
+                } else {
+                  System.err.println(" |-> Error : File not found");
+                  oos.writeObject(new HdfsResponse(null, "File not found"));
+                }
+              } else {
+                System.err.println(" |-> Error : Not a NameNode");
+                oos.writeObject(new HdfsResponse(null, "Not a NameNode"));
+              }
+              break;
+            case GET_CHUNK:
+              // TODO
+              break;
+            case GET_DATANODES:
+              System.out.println(" |-> Request all dataNodes");
+              if(HdfsServer.name != null) {
+                oos.writeObject(new HdfsResponse(HdfsServer.name.getDataNodes(), null));
+              } else {
+                System.err.println(" |-> Error : Not a NameNode");
+                oos.writeObject(new HdfsResponse(null, "Not a NameNode"));
+              }
+              break;
+            case WRT_FILE:
+            System.out.println(" |-> Recording new file " + query.getName());
+            if(HdfsServer.name != null) {
+              InfoFichier nfile = new InfoFichier(query.getName());
+              Map dataNodes = (Map)query.getData(); // ArrayList<Inet4Address>
+              for(Object i : dataNodes.keySet()) {
+                nfile.addChunk((Integer)i, (Inet4Address)dataNodes.get((Integer)i));
+              }
+              try {
+                HdfsServer.name.ajouterFichier(nfile);
+                oos.writeObject(new HdfsResponse(null, null));
+              } catch(AlreadyExists e) {
+                oos.writeObject(new HdfsResponse(null, e.getMessage()));
+              }
+            } else {
+              System.err.println(" |-> Error : Not a NameNode");
+              oos.writeObject(new HdfsResponse(null, "Not a NameNode"));
+            }
+              break;
+          }
+        } catch (IOException e) {
+          System.err.println("Error while writing socket : " + e.getMessage());
+        }
+      }
 
       try {
+        if(oos != null)oos.close();
+        if(ois != null)ois.close();
         this.socket.close();
       } catch (IOException e) {
-        System.err.println("Error closing socket : " + e.getMessage());
+        System.err.println("Error while closing socket : " + e.getMessage());
       }
     }
 
@@ -155,13 +236,15 @@ public class HdfsServer {
       public void run()
       {
         try {
-          FileOutputStream file = new FileOutputStream(HdfsServer.config_file_output);
-          ObjectOutputStream oos = new ObjectOutputStream(file);
-          oos.writeObject(HdfsServer.name);
-          oos.close();
-          file.close();
+          if(HdfsServer.name != null) {
+            FileOutputStream file = new FileOutputStream(HdfsServer.config_file_output);
+            ObjectOutputStream oos = new ObjectOutputStream(file);
+            oos.writeObject(HdfsServer.name);
+            oos.close();
+            file.close();
+            System.out.println(" -> NameNode data saved to " + HdfsServer.config_file_output);
+          } else System.out.println(" -> Shutdown completed");
           // méthodes sauvegardes de données du DataNode TODO
-          System.err.println(" -> NameNode data saved to " + HdfsServer.config_file_output);
         } catch (Exception e) {
           System.err.println(" -> Error while saving : " + e.getMessage());
           System.err.println("Shutdown without saving data");
