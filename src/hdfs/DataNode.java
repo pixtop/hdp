@@ -5,7 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 public class DataNode {
 
@@ -19,20 +21,36 @@ public class DataNode {
 	    this.dir = f;
     }
 
-    private static String readFile(String path) throws IOException {
+    private String readFile(String path) throws IOException {
         byte[] encoded = Files.readAllBytes(Paths.get(path));
         return new String(encoded);
     }
 
-	public String getChunk(String chunk) throws FileNotFoundException {
-	    File[] files = this.dir.listFiles();
-	    if (files == null) {
-	        throw new FileNotFoundException();
+    private String makeName(String prefix, int suffix) {
+	    return prefix + "." + suffix;
+    }
+
+    private File[] getFiles() throws FileNotFoundException {
+        File[] files = this.dir.listFiles();
+        if (files == null) {
+            throw new FileNotFoundException();
         }
+        return files;
+    }
+
+    /**
+     * @param fname filename
+     * @param chunk chunk number
+     * @return contents
+     * @throws FileNotFoundException exception if there is not file found
+     */
+	public String getChunk(String fname, int chunk) throws FileNotFoundException {
+	    String name = this.makeName(fname, chunk);
+        File[] files = this.getFiles();
 	    for (File f : files) {
-	        if (f.isFile() && f.getName().equals(chunk) ) {
+	        if (f.isFile() && f.getName().equals(name) ) {
                 try {
-                    return readFile(f.getPath());
+                    return this.readFile(f.getPath());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -41,13 +59,16 @@ public class DataNode {
         throw new FileNotFoundException();
     }
 
-	public void delChunk(String chunk) throws IOException {
-        File[] files = this.dir.listFiles();
-        if (files == null) {
-            throw new FileNotFoundException();
-        }
+    /**
+     * @param fname filename
+     * @param chunk chunk number
+     * @throws IOException exception if there is not file found or delete is impossible
+     */
+	public void delChunk(String fname, int chunk) throws IOException {
+        String name = this.makeName(fname, chunk);
+        File[] files = this.getFiles();
         for (File f : files) {
-            if (f.isFile() && f.getName().equals(chunk)) {
+            if (f.isFile() && f.getName().equals(name)) {
                 if (f.delete()) {
                     return;
                 }
@@ -59,7 +80,14 @@ public class DataNode {
         throw new FileNotFoundException();
     }
 
-    public void addChunk(String chunk) {
-
+    /**
+     * @param fname filename
+     * @param chunk chunk number
+     * @param content content of the file
+     * @throws IOException exception if writing is impossible
+     */
+    public void addChunk(String fname, int chunk, String content) throws IOException {
+        Path file = Paths.get(this.makeName(fname, chunk));
+        Files.write(file, Collections.singleton(content));
     }
 }
