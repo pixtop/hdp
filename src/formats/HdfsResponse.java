@@ -1,19 +1,20 @@
 package formats;
 
 import java.io.Serializable;
+import java.lang.Exception;
 
 public class HdfsResponse implements Serializable {
 
-    private String error; // null si pas d'erreur
+    private Exception error; // null si pas d'erreur
 
     private Serializable response; // error == null et response == null -> ACK
 
-    public HdfsResponse(Serializable response, String error) {
+    public HdfsResponse(Serializable response, Exception error) {
       this.error = error;
       this.response = response;
     }
 
-    public String getError() {
+    public Exception getError() {
       return this.error;
     }
 

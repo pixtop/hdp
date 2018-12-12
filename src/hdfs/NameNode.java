@@ -2,21 +2,19 @@ package hdfs;
 
 import java.io.Serializable;
 import java.net.Inet4Address;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.*;
 import exceptions.*;
 
 // Pistes d'amelioration --> changer le boolean de liste_fichiers_occupes en une enumeration pour permettre
 // de differencier l'occupation par ecriture et lecture afin de faire de la lecture en parallele
 class NameNode implements Serializable {
 
-	private ArrayList<InfoFichier> catalogue;
+	private Map<String, InfoFichier> catalogue;
 	private ArrayList<Inet4Address> liste_DataNodes;
 	private Hashtable<String,Boolean> liste_fichiers_occupés;
 
 	public NameNode() {
-		this.catalogue = new ArrayList<InfoFichier>();
+		this.catalogue = new HashMap<String, InfoFichier>();
 		this.liste_DataNodes = new ArrayList<Inet4Address>();
 		this.liste_fichiers_occupés = new Hashtable<String,Boolean>();
 	}
@@ -24,24 +22,20 @@ class NameNode implements Serializable {
 	// Permet d'ajouter un fichier au catalogue de NameNode si il n'est
 	// pas deja present, il est immediatement disponible.
 	public void ajouterFichier(InfoFichier fichier) throws AlreadyExists {
-		if (!this.liste_fichiers_occupés.containsKey(fichier.getNom())) {
-			this.catalogue.add(fichier);
+		if (this.catalogue.get(fichier.getNom()) == null) {
+			this.catalogue.put(fichier.getNom(), fichier);
 			this.liste_fichiers_occupés.put(fichier.getNom(), false);
 		} else throw new AlreadyExists("File " + fichier.getNom() + " already exists");
-
 	}
 
 	// Permet d'obtenir les informations du fichier de nom "nom"
 		// du catalogue de NameNode
 	public InfoFichier getInfoFichier(String nom) {
-		Iterator<InfoFichier> i = catalogue.iterator();
-		while (i.hasNext()) {
-			InfoFichier f = i.next();
-			if (f.getNom() == nom) {
-				return f;
-			}
-		}
-		return null;
+		return this.catalogue.get(nom);
+	}
+
+	public void supprimerFichier(String nom) {
+		this.catalogue.remove(nom);
 	}
 
 	// Retourne true si le fichier de nom "nom" est occupe, false sinon
@@ -84,17 +78,5 @@ class NameNode implements Serializable {
 	public ArrayList<Inet4Address> getDataNodes() {
 		return this.liste_DataNodes;
 	}
-
-	public static void main(String[] args) {
-		NameNode namenode = new NameNode();
-		// SlaveKeepAlive ajoute/supprime les DataNodes de la liste des DataNodes de NameNode
-		SlaveKeepAlive keepalive = new SlaveKeepAlive(namenode);
-		keepalive.start();
-
-
-	}
-
-
-
 
 }

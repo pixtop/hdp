@@ -4,6 +4,8 @@ import java.lang.*;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.nio.file.NotDirectoryException;
+
 import formats.*;
 import exceptions.*;
 
@@ -11,9 +13,11 @@ import exceptions.*;
 public class HdfsServer {
 
   public static int port = 4242;
-  private static String usage = "Usage : java HdfsServer [nameNode] [-f saved_config_file]";
+  private static String usage = "Usage : java HdfsServer [node_root] [-n] [-f saved_config_file]";
   private static String config_file_output = "HdfsServer.conf";
-  private static NameNode name;
+  private static NameNode name; // NameNode
+  private static DataNode data; // DataNode
+  private static String nodeRoot; // Root du serveur
 
   // Thread gerant le traitement de la demande d'un client
   public static class Traitement implements Runnable {
@@ -63,15 +67,19 @@ public class HdfsServer {
                   System.out.println(" |-> Chunks returned");
                 } else {
                   System.err.println(" |-> Error : File not found");
-                  oos.writeObject(new HdfsResponse(null, "File not found"));
+                  oos.writeObject(new HdfsResponse(null, new FileNotFoundException("File not found")));
                 }
               } else {
                 System.err.println(" |-> Error : Not a NameNode");
-                oos.writeObject(new HdfsResponse(null, "Not a NameNode"));
+                oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
               }
               break;
             case GET_CHUNK:
-              // TODO
+              try {
+                oos.writeObject(new HdfsResponse(HdfsServer.data.getChunk(query.getName(), query.getChunk()), null));
+              } catch (FileNotFoundException e) {
+                oos.writeObject(new HdfsResponse(null, e));
+              }
               break;
             case GET_DATANODES:
               System.out.println(" |-> Request all dataNodes");
@@ -79,27 +87,52 @@ public class HdfsServer {
                 oos.writeObject(new HdfsResponse(HdfsServer.name.getDataNodes(), null));
               } else {
                 System.err.println(" |-> Error : Not a NameNode");
-                oos.writeObject(new HdfsResponse(null, "Not a NameNode"));
+                oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
               }
               break;
             case WRT_FILE:
-            System.out.println(" |-> Recording new file " + query.getName());
-            if(HdfsServer.name != null) {
-              InfoFichier nfile = new InfoFichier(query.getName());
-              Map dataNodes = (Map)query.getData(); // ArrayList<Inet4Address>
-              for(Object i : dataNodes.keySet()) {
-                nfile.addChunk((Integer)i, (Inet4Address)dataNodes.get((Integer)i));
+              System.out.println(" |-> Recording new file " + query.getName());
+              if(HdfsServer.name != null) {
+                InfoFichier nfile = new InfoFichier(query.getName());
+                Map dataNodes = (Map)query.getData(); // ArrayList<Inet4Address>
+                for(Object i : dataNodes.keySet()) {
+                  nfile.addChunk((Integer)i, (Inet4Address)dataNodes.get((Integer)i));
+                }
+                try {
+                  HdfsServer.name.ajouterFichier(nfile);
+                  oos.writeObject(new HdfsResponse(null, null));
+                } catch(AlreadyExists e) {
+                  oos.writeObject(new HdfsResponse(null, e));
+                }
+              } else {
+                System.err.println(" |-> Error : Not a NameNode");
+                oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
               }
+              break;
+            case WRT_CHUNK:
               try {
-                HdfsServer.name.ajouterFichier(nfile);
+                HdfsServer.data.addChunk(query.getName(), query.getChunk(), (String)query.getData());
                 oos.writeObject(new HdfsResponse(null, null));
-              } catch(AlreadyExists e) {
-                oos.writeObject(new HdfsResponse(null, e.getMessage()));
+              } catch(IOException e) {
+                oos.writeObject(new HdfsResponse(null, e));
               }
-            } else {
-              System.err.println(" |-> Error : Not a NameNode");
-              oos.writeObject(new HdfsResponse(null, "Not a NameNode"));
-            }
+              break;
+            case DEL_CHUNK:
+              try {
+                HdfsServer.data.delChunk(query.getName(), query.getChunk());
+                oos.writeObject(new HdfsResponse(null, null));
+              } catch(IOException e) {
+                oos.writeObject(new HdfsResponse(null, e));
+              }
+              break;
+            case DEL_FILE:
+              System.out.println(" |-> Delete file " + query.getName());
+              if(HdfsServer.name != null) {
+                HdfsServer.name.supprimerFichier(query.getName());
+              } else {
+                System.err.println(" |-> Error : Not a NameNode");
+                oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
+              }
               break;
           }
         } catch (IOException e) {
@@ -123,10 +156,10 @@ public class HdfsServer {
   public static void main(String[] args) {
 
     HdfsServer.name = null; // NameNode si on a spécifié l'option -n
-    DataNode data; // DataNode
     boolean is_data = false; // Si on a spécifié l'option -n
     InetAddress name_addr = null; // Adresse du NameNode
     SlaveKeepAlive keepalive; // keepAlive du NameNode
+    HdfsServer.nodeRoot = "."; // Path ou s'enregistrerons les fichiers
 
     // Traitement des arguments
     for(int i = 0;i < args.length; i ++) {
@@ -169,8 +202,7 @@ public class HdfsServer {
           }
         break;
         default:
-          System.err.println("Unknown option " + args[i]);
-          System.exit(1);
+          HdfsServer.nodeRoot = args[i];
       }
     }
     // Construction NameNode(si voulu et vaut null) + dataNode
@@ -216,17 +248,14 @@ public class HdfsServer {
         System.exit(1);
       }
     }
-    // TODO Lancer le DataNode
-    System.out.println("DataNode started");
-
-    // Socket serveur à l'ecoute de client
-    ServerSocket serv_socket = null;
+    // Lancement dataNode
     try {
-      serv_socket = new ServerSocket(HdfsServer.port);
-    } catch (IOException e) {
-      System.err.println("Port" + HdfsServer.port + " already in use");
+      HdfsServer.data = new DataNode(HdfsServer.nodeRoot);
+    } catch (NotDirectoryException e) {
+      System.err.println(e.getMessage());
       System.exit(1);
     }
+    System.out.println("DataNode started");
 
     // Thread lance a l'arret du serveur -> Enregistrer les données(du NameNode) sur le disque
     Runtime run = Runtime.getRuntime();
@@ -237,7 +266,7 @@ public class HdfsServer {
       {
         try {
           if(HdfsServer.name != null) {
-            FileOutputStream file = new FileOutputStream(HdfsServer.config_file_output);
+            FileOutputStream file = new FileOutputStream(HdfsServer.nodeRoot + '/' + HdfsServer.config_file_output);
             ObjectOutputStream oos = new ObjectOutputStream(file);
             oos.writeObject(HdfsServer.name);
             oos.close();
@@ -252,6 +281,15 @@ public class HdfsServer {
       }
 
     });
+
+    // Socket serveur à l'ecoute de client
+    ServerSocket serv_socket = null;
+    try {
+      serv_socket = new ServerSocket(HdfsServer.port);
+    } catch (IOException e) {
+      System.err.println("Port" + HdfsServer.port + " already in use");
+      System.exit(1);
+    }
 
     // Attente de connexion
     while(true) {

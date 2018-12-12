@@ -8,25 +8,38 @@ public class HdfsQuery implements Serializable {
                         GET_CHUNK, // Récupération chunk d'un fichier auprès d'un DataNode
                         GET_DATANODES, // Récupération liste data nodes sur le NameNode
                         WRT_FILE, // Écriture sur le NameNode
-                        WRT_CHUNK // Écriture sur un DataNode
+                        WRT_CHUNK, // Écriture sur un DataNode
+                        DEL_CHUNK, // Suppression chunk sur DataNode
+                        DEL_FILE // Suppresion file sur NameNode
                         };
 
-    private String fname;
+    private String fname; // nom fichier
 
-    private Command cmd;
+    private Integer chunk; // index du chunk si besoin
 
-    private Serializable data;
+    private Command cmd; // commande
+
+    private Serializable data; // Map des DataNodes si cmd = WRT_CHUNK, index si cmd = GET_CHUNK, chunk (String) si WRT_CHUNK
 
     public HdfsQuery(Command cmd, String fname) {
       this.fname = fname;
       this.cmd = cmd;
       this.data = null;
+      this.chunk = null;
+    }
+
+    public HdfsQuery(Command cmd, String fname, Integer chunk, Serializable data) {
+      this.fname = fname;
+      this.cmd = cmd;
+      this.data = data;
+      this.chunk = chunk;
     }
 
     public HdfsQuery(Command cmd, String fname, Serializable data) {
       this.fname = fname;
       this.cmd = cmd;
       this.data = data;
+      this.chunk = null;
     }
 
     public String getName() {
@@ -39,6 +52,10 @@ public class HdfsQuery implements Serializable {
 
     public Serializable getData() {
       return this.data;
+    }
+
+    public Integer getChunk() {
+      return this.chunk;
     }
 
 }
