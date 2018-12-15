@@ -1,9 +1,6 @@
 package hdfs;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -134,7 +131,8 @@ class DataNode {
      * @throws IOException exception if writing is impossible
      */
     void addChunk(String fname, int chunk, String content) throws IOException {
-        Path file = Paths.get(this.dir.getPath(),this.makeName(fname, chunk));
-        Files.write(file, Collections.singleton(content));
+        FileWriter file = new FileWriter(makeName(fname, chunk));
+        file.write(content);
+        file.close();
     }
 }

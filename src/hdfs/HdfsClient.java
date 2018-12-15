@@ -11,7 +11,7 @@ import formats.*;
 public class HdfsClient {
 
     public static String nameNode = "localhost";
-    private static int taille_chunk = 1000; // Nombre d'enregistrement par chunk
+    private static int taille_chunk = 10; // Nombre d'enregistrement par chunk
 
     private static void usage() {
         System.out.println("Usage: java HdfsClient read <file>");
@@ -50,13 +50,20 @@ public class HdfsClient {
        HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_DATANODES, null);
        oos.writeObject(query);
        HdfsResponse response = (HdfsResponse)ois.readObject();
+
+       // Fermeture socket
+       oos.close();
+       ois.close();
+       s.close();
+
        if(response.getError() != null) throw response.getError();
        ArrayList data_nodes = (ArrayList)response.getResponse(); // ArrayList<Inet4Address>
        if(data_nodes.size() == 0)throw new Exception("Not a single DataNode in the system");
+       // System.out.println("Data Nodes récupérés");
 
        // Écriture des chunks
        Hashtable<Integer, Inet4Address> used_nodes = new Hashtable<Integer, Inet4Address>();
-       int i = 0;
+       int i = 0, index = 0;
        while(true) {
          int j;
          String chk = "";
@@ -66,31 +73,41 @@ public class HdfsClient {
            if(fmt == Format.Type.LINE)chk = chk + rd.v + "\n";
            else chk = chk + rd.k + KV.SEPARATOR + rd.v + "\n";
          }
-         query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, localFSSourceFname, i * HdfsClient.taille_chunk, (Serializable)chk);
+         // System.out.print("chunk " + index + " : " + chk);
+         query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, localFSSourceFname, index, (Serializable)chk);
          Inet4Address data_node = (Inet4Address)data_nodes.get(i);
          Socket sd = new Socket(data_node, HdfsServer.port);
-         ObjectOutputStream oosd = new ObjectOutputStream(s.getOutputStream());
-         ObjectInputStream oisd = new ObjectInputStream(s.getInputStream());
+         ObjectOutputStream oosd = new ObjectOutputStream(sd.getOutputStream());
+         ObjectInputStream oisd = new ObjectInputStream(sd.getInputStream());
          // Envoit chunk
          oosd.writeObject(query);
          response = (HdfsResponse)oisd.readObject(); // Récupération ACK
          if(response.getError() != null)throw response.getError();
-         used_nodes.put(i * HdfsClient.taille_chunk, data_node);
+         // System.out.println("Chunk " + index + " écrit");
+         used_nodes.put(index, data_node);
          oosd.close();
          oisd.close();
          sd.close();
          i = (i + 1)%data_nodes.size();
+         index += HdfsClient.taille_chunk;
          if(j != HdfsClient.taille_chunk)break;
        }
+
+       // Fermeture fichier
+       reader.close();
+
+       // Ouverture socket avec DataNode
+       s = new Socket(HdfsClient.nameNode, HdfsServer.port);
+       oos = new ObjectOutputStream(s.getOutputStream());
+       ois = new ObjectInputStream(s.getInputStream());
 
        // Écriture sur NameNode
        query = new HdfsQuery(HdfsQuery.Command.WRT_FILE, localFSSourceFname, (Serializable)used_nodes);
        oos.writeObject(query);
        response = (HdfsResponse)ois.readObject();
        if(response.getError() != null) throw response.getError();
+       // System.out.println("Fichier écrit sur le NameNode");
 
-       // Fermeture fichier
-       reader.close();
        // Fermeture socket
        oos.close();
        ois.close();
@@ -98,28 +115,7 @@ public class HdfsClient {
      }
 
     public static void HdfsRead(String hdfsFname, String localFSDestFname) {
-      try {
-        // Ouverture socket
-        Socket s = new Socket(HdfsClient.nameNode, HdfsServer.port);
-        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-        ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-
-        // Obtention des datanodes gérant le fichier auprès du nameNode
-        HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_FILE, hdfsFname);
-        oos.writeObject(query);
-        HdfsResponse response = (HdfsResponse)ois.readObject();
-        if(response.getError() == null) {
-          Hashtable chunks = (Hashtable)response.getResponse(); // Hashtable<Integer,Inet4Address>
-          // TODO appel des dataNodes
-        } else System.err.println("Error : " + response.getError());
-
-        // Fermeture socket
-        oos.close();
-        ois.close();
-        s.close();
-      } catch (Exception e) {
-        System.err.println("Error : " + e.getMessage());
-      }
+      
     }
 
 
@@ -141,7 +137,7 @@ public class HdfsClient {
                 HdfsWrite(fmt,args[2],1);
             }
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            System.err.println("Error : " + ex.getMessage());
         }
     }
 

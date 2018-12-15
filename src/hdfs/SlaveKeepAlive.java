@@ -20,7 +20,10 @@ public class SlaveKeepAlive extends Thread{
 
 	public SlaveKeepAlive(NameNode namenode) {
 		master = namenode;
-		dataNodes = master.getDataNodes();
+		ArrayList<Inet4Address> toCpy = master.getDataNodes();
+		dataNodes = new ArrayList<Inet4Address>();
+		for(int i = 0; i < toCpy.size(); i ++)
+			dataNodes.add(toCpy.get(i));
 	}
 
 	public void run() {
@@ -46,16 +49,7 @@ public class SlaveKeepAlive extends Thread{
 
 	protected void removeDataNode(Inet4Address addr) {
 		synchronized(this.dataNodes) {
-			if (addr!=null) {
-				Iterator<Inet4Address> i = this.dataNodes.iterator();
-				while (i.hasNext()) {
-					Inet4Address a = i.next();
-					if (a.equals(addr)) {
-						this.dataNodes.remove(a);
-						break;
-					}
-				}
-			}
+			this.dataNodes.remove(addr);
 		}
 	}
 
@@ -92,7 +86,11 @@ class KeepAlive implements Runnable {
 
 		}
 		// On remet dataNodes a 0 et on recommence
-		slave.setDataNodes(slave.getMaster().getDataNodes());
+		ArrayList<Inet4Address> toCpy = slave.getMaster().getDataNodes();
+		ArrayList<Inet4Address> dataNodes = new ArrayList<Inet4Address>();
+		for(int j = 0; j < toCpy.size(); j ++)
+			dataNodes.add(toCpy.get(j));
+		slave.setDataNodes(dataNodes);
 
 	}
 }
@@ -111,6 +109,7 @@ class Slave extends Thread {
 		try {
 			ois = new ObjectInputStream(ssock.getInputStream());
 			Inet4Address addr = (Inet4Address)ois.readObject();
+			ois.close();
 			ssock.close();
 			if (!slave.getMaster().estPresente(addr)) {
 				// Si c'est une nouvelle adresse on l'ajoute

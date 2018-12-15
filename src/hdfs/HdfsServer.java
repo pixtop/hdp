@@ -110,10 +110,12 @@ public class HdfsServer {
               }
               break;
             case WRT_CHUNK:
+              System.out.println(" |-> Adding chunk of file " + query.getName() + ", index : " + query.getChunk());
               try {
                 HdfsServer.data.addChunk(query.getName(), query.getChunk(), (String)query.getData());
                 oos.writeObject(new HdfsResponse(null, null));
               } catch(IOException e) {
+                System.err.println(" |-> Error : Could'nt write chunk");
                 oos.writeObject(new HdfsResponse(null, e));
               }
               break;

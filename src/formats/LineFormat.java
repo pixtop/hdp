@@ -7,6 +7,7 @@ public class LineFormat implements Format, Serializable {
 	private static final long serialVersionUID = -9146586647773108023L;
 	private String fname; // Nom du fichier
 	private FileReader input;
+	private BufferedReader br;
 	private FileWriter output;
 	private long index; // Nombre d'enregistrements lu
 
@@ -27,6 +28,7 @@ public class LineFormat implements Format, Serializable {
 					case R:
 							try {
 								this.input = new FileReader(fname);
+								this.br = new BufferedReader(input);
 							} catch (FileNotFoundException e) {
 								throw new IOException(e.getMessage());
 							}
@@ -48,6 +50,7 @@ public class LineFormat implements Format, Serializable {
 		}
 		output = null;
 		input = null;
+		index = 0;
 	}
 
 	@Override
@@ -68,11 +71,9 @@ public class LineFormat implements Format, Serializable {
 	@Override
 	public KV read() {
 		try {
-			BufferedReader br = new BufferedReader(input);
-			String line = br.readLine();
+			String line = this.br.readLine();
 			if(line == null)return null;
-			index ++;
-			return new KV(Long.toString(index), line);
+			return new KV(Long.toString(index++), line);
 		} catch (IOException e) {
 			return null;
 		}
@@ -99,8 +100,10 @@ public class LineFormat implements Format, Serializable {
 			for(int i = 0;i < 100; i ++)f.write(new KV(null,"Une ligne " + i));
 			f.close();
 			f.open(Format.OpenMode.R);
-			KV r = f.read();
-			System.out.println(r.k + " -> " + r.v);
+			for(int i = 0;i < 100; i ++) {
+				KV r = f.read();
+				System.out.println("Ligne " + r.k + " -> " + r.v);
+			}
 			f.close();
 		} catch (IOException e) {
 			e.printStackTrace();

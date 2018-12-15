@@ -48,31 +48,16 @@ class NameNode implements Serializable {
 		this.liste_fichiers_occupés.replace(nom, status);
 	}
 
-
 	public void addDataNode(Inet4Address addr) {
 		this.liste_DataNodes.add(addr);
 	}
 
 	public void removeDataNode(Inet4Address addr) {
-		Iterator<Inet4Address> i = this.liste_DataNodes.iterator();
-		while (i.hasNext()) {
-			Inet4Address a = i.next();
-			if (a.equals(addr)) {
-				this.liste_DataNodes.remove(a);
-				break;
-			}
-		}
+		this.liste_DataNodes.remove(addr);
 	}
 
 	public boolean estPresente(Inet4Address addr) {
-		Iterator<Inet4Address> i = this.liste_DataNodes.iterator();
-		while (i.hasNext()) {
-			Inet4Address a = i.next();
-			if (a.equals(addr)) {
-				return true;
-			}
-		}
-		return false;
+		return this.liste_DataNodes.contains(addr);
 	}
 
 	public ArrayList<Inet4Address> getDataNodes() {

@@ -2,8 +2,9 @@ package hdfs;
 
 import java.net.Inet4Address;
 import java.util.Hashtable;
+import java.io.Serializable;
 
-public class InfoFichier {
+public class InfoFichier implements Serializable {
 
 	private Hashtable<Integer,Inet4Address> chunks; // Clef -> ChunkHandle, Valeur -> Adresse trouve le chunk
 	private String nom; // Nom du fichier

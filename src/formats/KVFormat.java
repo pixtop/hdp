@@ -8,6 +8,7 @@ public class KVFormat implements Format, Serializable{
     private String fname; // Nom du fichier
 		private FileReader input;
 		private FileWriter output;
+		private BufferedReader br;
 		private long index; // Nombre d'enregistrements lu
 
     public KVFormat() {
@@ -27,6 +28,7 @@ public class KVFormat implements Format, Serializable{
 						case R:
 								try {
 									this.input = new FileReader(fname);
+									this.br = new BufferedReader(input);
 								} catch (FileNotFoundException e) {
 									throw new IOException(e.getMessage());
 								}
@@ -48,6 +50,7 @@ public class KVFormat implements Format, Serializable{
 			}
 			output = null;
 			input = null;
+			index = 0;
     }
 
     @Override
@@ -68,8 +71,7 @@ public class KVFormat implements Format, Serializable{
     @Override
     public KV read() {
 			try {
-				BufferedReader br = new BufferedReader(input);
-				String line = br.readLine();
+				String line = this.br.readLine();
 				if(line == null)return null;
 				index ++;
 				String part[] = line.split(KV.SEPARATOR);
