@@ -39,7 +39,7 @@ class NameNode implements Serializable {
 	}
 
 	// Retourne true si le fichier de nom "nom" est occupe, false sinon
-	public boolean est_occupé(String nom) {
+	public boolean est_occupe(String nom) {
 		return liste_fichiers_occupés.get(nom);
 	}
 
