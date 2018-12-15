@@ -1,102 +1,106 @@
 package formats;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-
-import config.Project;
+import java.io.*;
 
 public class KVFormat implements Format, Serializable{
 
-
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -6856607893995314001L;
-	private OpenMode mode;
-    private String fname;
-    private int ligne_rendu;
+		private static final long serialVersionUID = -6856607893995314001L;
+    private String fname; // Nom du fichier
+		private FileReader input;
+		private FileWriter output;
+		private long index; // Nombre d'enregistrements lu
 
     public KVFormat() {
+			input = null;
+			output = null;
+			fname = null;
+			index = 0;
     }
 
     @Override
-    public void open(OpenMode mode) {
-        this.mode = mode;
+		/**
+		* @throws IOException if cannot open with that mode
+		*/
+    public void open(OpenMode mode) throws IOException {
+			if(fname != null) {
+					switch(mode) {
+						case R:
+								try {
+									this.input = new FileReader(fname);
+								} catch (FileNotFoundException e) {
+									throw new IOException(e.getMessage());
+								}
+							break;
+						case W:
+								this.output = new FileWriter(fname);
+							break;
+					}
+			} else throw new IOException("No file specified - use setFname()");
     }
 
     @Override
     public void close() {
-        this.mode = null;
+			try {
+				if(input != null)input.close();
+				if(output != null)output.close();
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+			}
+			output = null;
+			input = null;
     }
 
     @Override
     public long getIndex() {
-        return 0;
+      return index;
     }
 
     @Override
     public String getFname() {
-        return this.fname;
+      return fname;
     }
 
     @Override
     public void setFname(String fname) {
-        this.fname = fname;
+			this.fname = fname;
     }
 
     @Override
     public KV read() {
-    	System.out.println("Accesing:"+Project.PATH+"data/"+fname);
-    	BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(Project.PATH+"data/"+fname));
-			for (int i=0;i<ligne_rendu;i++) {
-				br.readLine();
-	    	}
-	   	    String line = br.readLine();
-	   	    this.ligne_rendu++;
-	   	    if (line==null) {
-	   	    	br.close();
-	   	    	return null;
-	   	    }else {
-	   	    	br.close();
-	   	    	String[] parts = line.split(KV.SEPARATOR);
-	    		return new KV(parts[0],parts[1]);
-	   	    }
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+			try {
+				BufferedReader br = new BufferedReader(input);
+				String line = br.readLine();
+				if(line == null)return null;
+				index ++;
+				String part[] = line.split(KV.SEPARATOR);
+				return new KV(part[0], part[1]);
+			} catch (IOException e) {
+				return null;
+			}
     }
 
     @Override
     public void write(KV record) {
-    	String a_ecrire = record.k+KV.SEPARATOR+record.v+"\n";
-		try {
-			Files.write(Paths.get(Project.PATH+"data/"+fname+"-rec"), a_ecrire.getBytes(), StandardOpenOption.APPEND);
-		} catch (NoSuchFileException e) {
-			try {
-				Files.write(Paths.get(Project.PATH+"data/"+fname+"-rec"), a_ecrire.getBytes(), StandardOpenOption.CREATE_NEW);
-			} catch (IOException e1) {
-				e1.printStackTrace();
+			if(output != null) {
+				try {
+					output.write(record.k + KV.SEPARATOR + record.v + "\n");
+					index ++;
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
     }
 
-    /* TESTS
     public static void main(String[] args) {
-    	LineFormat l = new LineFormat();
-    	l.setFname("test.txt");
-    	l.write(l.read());
-    	l.write(l.read());
+			try {
+	    	KVFormat f = new KVFormat();
+	    	f.setFname("test.txt");
+				f.open(Format.OpenMode.W);
+				for(int i = 0;i < 100; i ++)f.write(new KV("Key " + i,"Val " + i));
+				f.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    }
 
-    } */
 }

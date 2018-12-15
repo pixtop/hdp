@@ -94,7 +94,7 @@ public class HdfsServer {
               System.out.println(" |-> Recording new file " + query.getName());
               if(HdfsServer.name != null) {
                 InfoFichier nfile = new InfoFichier(query.getName());
-                Map dataNodes = (Map)query.getData(); // ArrayList<Inet4Address>
+                Map dataNodes = (Map)query.getData(); // Map<Integer, Inet4Address>
                 for(Object i : dataNodes.keySet()) {
                   nfile.addChunk((Integer)i, (Inet4Address)dataNodes.get((Integer)i));
                 }

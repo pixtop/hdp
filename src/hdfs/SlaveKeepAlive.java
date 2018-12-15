@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit;
 public class SlaveKeepAlive extends Thread{
 	private NameNode master;
 	private ArrayList<Inet4Address> dataNodes;
-	
+
 	public SlaveKeepAlive(NameNode namenode) {
 		master = namenode;
 		dataNodes = master.getDataNodes();
 	}
-	
+
 	public void run() {
 		// Toutes les 5 secondes on supprime les dataNodes qui n'ont pas repondu au keepAlive
 		ScheduledExecutorService scheduler =
@@ -36,14 +36,14 @@ public class SlaveKeepAlive extends Thread{
 			while (true) {
 				// Si on reenvoi un message de keepAlive d'un node on l'enleve de la liste
 				Slave sl = new Slave(serveur.accept(),this);
-				sl.start();			
-			}	
+				sl.start();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
     }
-	
+
 	protected void removeDataNode(Inet4Address addr) {
 		synchronized(this.dataNodes) {
 			if (addr!=null) {
@@ -70,41 +70,42 @@ public class SlaveKeepAlive extends Thread{
 			this.dataNodes = dataNodes;
 		}
 	}
-	
+
 	protected NameNode getMaster() {
 		return master;
 	}
-	
-} 
+
+}
 
 class KeepAlive implements Runnable {
 	SlaveKeepAlive slave;
-	
+
 	public KeepAlive(SlaveKeepAlive slave) {
 		this.slave = slave;
 	}
-	
+
 	public void run() {
 		Iterator<Inet4Address> i = slave.getDataNodes().iterator();
 		while (i.hasNext()) {
 			// Un des dataNode n'a pas repondu -> On le supprime
 			slave.getMaster().removeDataNode(i.next());
-			
+
 		}
 		// On remet dataNodes a 0 et on recommence
 		slave.setDataNodes(slave.getMaster().getDataNodes());
 
 	}
-} 
+}
 
 class Slave extends Thread {
 	 private Socket ssock;
 	 private SlaveKeepAlive slave;
-	 
+
 	 public Slave(Socket s,SlaveKeepAlive slave) {
 		 this.ssock = s;
+		 this.slave = slave;
 	 }
-	 
+
 	 public void run() {
 		ObjectInputStream ois;
 		try {
@@ -115,14 +116,14 @@ class Slave extends Thread {
 				// Si c'est une nouvelle adresse on l'ajoute
 				slave.getMaster().addDataNode(addr);
 			} else {
-				// Sinon on la supprime de la liste des DataNodes qui n'ont pas 
+				// Sinon on la supprime de la liste des DataNodes qui n'ont pas
 				// repondu
-				slave.removeDataNode(addr);	
+				slave.removeDataNode(addr);
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	 }	 
+	 }
 
 }

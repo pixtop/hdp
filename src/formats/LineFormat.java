@@ -1,104 +1,110 @@
 package formats;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-
-import config.Project;
+import java.io.*;
 
 public class LineFormat implements Format, Serializable {
 
-    /**
-	 *
-	 */
 	private static final long serialVersionUID = -9146586647773108023L;
-	private OpenMode mode;
-    private String fname;
-    private int ligne_rendu;
+	private String fname; // Nom du fichier
+	private FileReader input;
+	private FileWriter output;
+	private long index; // Nombre d'enregistrements lu
 
-    public LineFormat() {
-    	ligne_rendu = 0;
-    }
+	public LineFormat() {
+		input = null;
+		output = null;
+		fname = null;
+		index = 0;
+	}
 
-    @Override
-    public void open(OpenMode mode) {
-        this.mode = mode;
-    }
+	@Override
+	/**
+	* @throws IOException if cannot open with that mode
+	*/
+	public void open(OpenMode mode) throws IOException {
+		if(fname != null) {
+				switch(mode) {
+					case R:
+							try {
+								this.input = new FileReader(fname);
+							} catch (FileNotFoundException e) {
+								throw new IOException(e.getMessage());
+							}
+						break;
+					case W:
+							this.output = new FileWriter(fname);
+						break;
+				}
+		} else throw new IOException("No file specified - use setFname()");
+	}
 
-    @Override
-    public void close() {
-        this.mode = null;
-    }
-
-    @Override
-    public long getIndex() {
-        return 0;
-    }
-
-    @Override
-    public String getFname() {
-        return this.fname;
-    }
-
-    @Override
-    public void setFname(String fname) {
-        this.fname = fname;
-    }
-
-    @Override
-    public KV read() {
-    	System.out.println("Accesing:"+Project.PATH+"data/"+fname);
-    	BufferedReader br;
+	@Override
+	public void close() {
 		try {
-			br = new BufferedReader(new FileReader(Project.PATH+"data/"+fname));
-			for (int i=0;i<ligne_rendu;i++) {
-				br.readLine();
-	    	}
-	   	    String line = br.readLine();
-	   	    this.ligne_rendu++;
-	   	    if (line==null) {
-	   	    	br.close();
-	   	    	return null;
-	   	    }else {
-	   	    	br.close();
-	    		return new KV("",line);
-	   	    }
-		} catch (Exception e) {
-			e.printStackTrace();
+			if(input != null)input.close();
+			if(output != null)output.close();
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
+		output = null;
+		input = null;
+	}
+
+	@Override
+	public long getIndex() {
+		return index;
+	}
+
+	@Override
+	public String getFname() {
+		return fname;
+	}
+
+	@Override
+	public void setFname(String fname) {
+		this.fname = fname;
+	}
+
+	@Override
+	public KV read() {
+		try {
+			BufferedReader br = new BufferedReader(input);
+			String line = br.readLine();
+			if(line == null)return null;
+			index ++;
+			return new KV(Long.toString(index), line);
+		} catch (IOException e) {
 			return null;
 		}
-    }
+	}
 
-    @Override
-    public void write(KV record) {
-    	String a_ecrire = record.v+"\n";
-		try {
-			Files.write(Paths.get(Project.PATH+"data/"+fname+"-rec"), a_ecrire.getBytes(), StandardOpenOption.APPEND);
-		} catch (NoSuchFileException e) {
+	@Override
+	public void write(KV record) {
+		if(output != null) {
 			try {
-				Files.write(Paths.get(Project.PATH+"data/"+fname+"-rec"), a_ecrire.getBytes(), StandardOpenOption.CREATE_NEW);
-			} catch (IOException e1) {
-				e1.printStackTrace();
+				output.write(record.v + "\n");
+				index ++;
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
+		}
+	}
+
+	/* Test */
+	public static void main(String[] args) {
+		try {
+			LineFormat f = new LineFormat();
+			f.setFname("test.txt");
+			f.open(Format.OpenMode.W);
+			for(int i = 0;i < 100; i ++)f.write(new KV(null,"Une ligne " + i));
+			f.close();
+			f.open(Format.OpenMode.R);
+			KV r = f.read();
+			System.out.println(r.k + " -> " + r.v);
+			f.close();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-    }
-
-  /*  TESTS
-    public static void main(String[] args) {
-    	LineFormat l = new LineFormat();
-    	l.setFname("test.txt");
-    	l.write(l.read());
-    	l.write(l.read());
-
-    } */
-
+	}
 
 }
