@@ -65,7 +65,7 @@ class DataNode {
 	    this(dir);
 
         ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
-        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode, port), 5, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode, port), 2, 5, TimeUnit.SECONDS);
     }
 
     private String readFile(String path) throws IOException {
@@ -74,7 +74,7 @@ class DataNode {
     }
 
     private String makeName(String prefix, int suffix) {
-	    return prefix + "." + suffix;
+	    return dir.getPath() + "/" + prefix + "." + suffix;
     }
 
     private File[] getFiles() throws FileNotFoundException {
