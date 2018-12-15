@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 class DataNode {
 
-    private class KeepAlive extends Thread{
+    private class KeepAlive implements Runnable {
 
         private Inet4Address addr;
 
