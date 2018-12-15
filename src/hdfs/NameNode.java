@@ -11,12 +11,12 @@ class NameNode implements Serializable {
 
 	private Map<String, InfoFichier> catalogue;
 	private ArrayList<Inet4Address> liste_DataNodes;
-	private Hashtable<String,Boolean> liste_fichiers_occupés;
+	private Hashtable<String,Boolean> liste_fichiers_occupes;
 
 	public NameNode() {
 		this.catalogue = new HashMap<String, InfoFichier>();
 		this.liste_DataNodes = new ArrayList<Inet4Address>();
-		this.liste_fichiers_occupés = new Hashtable<String,Boolean>();
+		this.liste_fichiers_occupes = new Hashtable<String,Boolean>();
 	}
 
 	// Permet d'ajouter un fichier au catalogue de NameNode si il n'est
@@ -24,7 +24,7 @@ class NameNode implements Serializable {
 	public void ajouterFichier(InfoFichier fichier) throws AlreadyExists {
 		if (this.catalogue.get(fichier.getNom()) == null) {
 			this.catalogue.put(fichier.getNom(), fichier);
-			this.liste_fichiers_occupés.put(fichier.getNom(), false);
+			this.liste_fichiers_occupes.put(fichier.getNom(), false);
 		} else throw new AlreadyExists("File " + fichier.getNom() + " already exists");
 	}
 
@@ -40,12 +40,12 @@ class NameNode implements Serializable {
 
 	// Retourne true si le fichier de nom "nom" est occupe, false sinon
 	public boolean est_occupe(String nom) {
-		return liste_fichiers_occupés.get(nom);
+		return liste_fichiers_occupes.get(nom);
 	}
 
 	// Permet de donner le status du fichier de nom "nom"
 	public void setStatus(String nom, Boolean status) {
-		this.liste_fichiers_occupés.replace(nom, status);
+		this.liste_fichiers_occupes.replace(nom, status);
 	}
 
 	public void addDataNode(Inet4Address addr) {
