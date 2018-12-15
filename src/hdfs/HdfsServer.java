@@ -250,9 +250,9 @@ public class HdfsServer {
     }
     // Lancement dataNode
     try {
-      HdfsServer.data = new DataNode(HdfsServer.nodeRoot);
-    } catch (NotDirectoryException e) {
-      System.err.println(e.getMessage());
+      HdfsServer.data = new DataNode(HdfsServer.nodeRoot, (Inet4Address)name_addr, 8080);
+    } catch (IOException e) {
+      System.err.println("DataNode error : " + e.getMessage());
       System.exit(1);
     }
     System.out.println("DataNode started");
