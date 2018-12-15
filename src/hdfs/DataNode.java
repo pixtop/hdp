@@ -5,9 +5,7 @@ import java.net.Inet4Address;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -71,7 +69,7 @@ class DataNode {
     }
 
     private String makeName(String prefix, int suffix) {
-	    return dir.getPath() + "/" + prefix + "." + suffix;
+	    return prefix + "." + suffix;
     }
 
     private File[] getFiles() throws FileNotFoundException {
@@ -131,7 +129,7 @@ class DataNode {
      * @throws IOException exception if writing is impossible
      */
     void addChunk(String fname, int chunk, String content) throws IOException {
-        FileWriter file = new FileWriter(makeName(fname, chunk));
+        FileWriter file = new FileWriter(this.dir.getPath() + '/' + makeName(fname, chunk));
         file.write(content);
         file.close();
     }
