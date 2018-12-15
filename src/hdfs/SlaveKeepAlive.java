@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 
 // Les messages KeepAlive sont des Inet4Address (l'addresse de DataNode)
-// Ces messages doivent etre envoyes sur le port 8080
 public class SlaveKeepAlive extends Thread{
+
+	// Ces messages doivent etre envoyes sur le port 8080
+	static int port = 8080;
+
 	private NameNode master;
 	private ArrayList<Inet4Address> dataNodes;
 
@@ -29,7 +32,7 @@ public class SlaveKeepAlive extends Thread{
 		ServerSocket serveur;
 
 		try {
-			serveur = new ServerSocket(8080);
+			serveur = new ServerSocket(SlaveKeepAlive.port);
 			while (true) {
 				// Si on reenvoi un message de keepAlive d'un node on l'enleve de la liste
 				Slave sl = new Slave(serveur.accept(),this);

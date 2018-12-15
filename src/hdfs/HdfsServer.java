@@ -252,7 +252,7 @@ public class HdfsServer {
     }
     // Lancement dataNode
     try {
-      HdfsServer.data = new DataNode(HdfsServer.nodeRoot, (Inet4Address)name_addr, 8080);
+      HdfsServer.data = new DataNode(HdfsServer.nodeRoot, (Inet4Address)name_addr);
     } catch (IOException e) {
       System.err.println("DataNode error : " + e.getMessage());
       System.exit(1);

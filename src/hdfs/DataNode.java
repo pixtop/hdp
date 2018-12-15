@@ -1,6 +1,10 @@
 package hdfs;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.Inet4Address;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -16,17 +20,14 @@ class DataNode {
 
         private Inet4Address addr;
 
-        private int port;
-
-        KeepAlive(Inet4Address addr, int port) {
+        KeepAlive(Inet4Address addr) {
             this.addr = addr;
-            this.port = port;
         }
 
         @Override
         public void run() {
             try {
-                Socket s = new Socket(addr, port);
+                Socket s = new Socket(addr, SlaveKeepAlive.port);
                 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                 oos.writeObject(Inet4Address.getLocalHost());
             } catch (IOException e) {
@@ -53,14 +54,13 @@ class DataNode {
     /**
      * @param dir chunks folder
      * @param nameNode Name node ip address
-     * @param port Name node port
      * @throws IOException exception if there is connection problem
      */
-	DataNode(String dir, Inet4Address nameNode, int port) throws IOException {
+	DataNode(String dir, Inet4Address nameNode) throws IOException {
 	    this(dir);
 
         ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
-        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode, port), 2, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode), 2, 5, TimeUnit.SECONDS);
     }
 
     private String readFile(String path) throws IOException {
