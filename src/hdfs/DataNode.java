@@ -39,6 +39,13 @@ class DataNode {
 
     private File dir;
 
+    /**
+     *
+     * @param dir chunks folder
+     * @param nameNode Name node ip adress
+     * @param port Name node port
+     * @throws IOException exception if there is not folder or connection problems
+     */
 	DataNode(String dir, Inet4Address nameNode, int port) throws IOException {
 	    File f = new File(dir);
 
