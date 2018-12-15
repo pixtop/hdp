@@ -43,19 +43,26 @@ class DataNode {
     private File dir;
 
     /**
-     *
+     * @param dir chunks folder
+     * @throws NotDirectoryException exception if directory is wrong
+     */
+    DataNode(String dir) throws NotDirectoryException {
+        File f = new File(dir);
+
+        if ( !f.exists() || !f.isDirectory() ) {
+            throw new NotDirectoryException("Le dossier n'existe pas");
+        }
+        this.dir = f;
+    }
+
+    /**
      * @param dir chunks folder
      * @param nameNode Name node ip address
      * @param port Name node port
-     * @throws IOException exception if there is not folder or connection problems
+     * @throws IOException exception if there is connection problem
      */
 	DataNode(String dir, Inet4Address nameNode, int port) throws IOException {
-	    File f = new File(dir);
-
-	    if ( !f.exists() || !f.isDirectory() ) {
-	        throw new NotDirectoryException("Le dossier n'existe pas");
-        }
-	    this.dir = f;
+	    this(dir);
 
         ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
         scheduler.scheduleAtFixedRate(new KeepAlive(nameNode, port), 5, 5, TimeUnit.SECONDS);
@@ -127,7 +134,7 @@ class DataNode {
      * @throws IOException exception if writing is impossible
      */
     void addChunk(String fname, int chunk, String content) throws IOException {
-        Path file = Paths.get(this.makeName(fname, chunk));
+        Path file = Paths.get(this.dir.getPath(),this.makeName(fname, chunk));
         Files.write(file, Collections.singleton(content));
     }
 }
