@@ -11,26 +11,29 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 class DataNode {
 
     private class KeepAlive extends Thread{
 
-        private Socket s;
+        private Inet4Address addr;
 
-        KeepAlive(Socket s) {
-            this.s = s;
+        private int port;
+
+        KeepAlive(Inet4Address addr, int port) {
+            this.addr = addr;
+            this.port = port;
         }
 
         @Override
         public void run() {
             try {
-                ObjectOutputStream oos = new ObjectOutputStream(this.s.getOutputStream());
+                Socket s = new Socket(addr, port);
+                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                 oos.writeObject(Inet4Address.getLocalHost());
-                this.s.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -42,7 +45,7 @@ class DataNode {
     /**
      *
      * @param dir chunks folder
-     * @param nameNode Name node ip adress
+     * @param nameNode Name node ip address
      * @param port Name node port
      * @throws IOException exception if there is not folder or connection problems
      */
@@ -54,8 +57,8 @@ class DataNode {
         }
 	    this.dir = f;
 
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(new KeepAlive(new Socket(nameNode, port)), 5, 5, TimeUnit.SECONDS);
+        ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
+        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode, port), 5, 5, TimeUnit.SECONDS);
     }
 
     private String readFile(String path) throws IOException {
