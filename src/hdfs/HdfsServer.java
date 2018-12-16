@@ -64,7 +64,6 @@ public class HdfsServer {
                 InfoFichier info = HdfsServer.name.getInfoFichier(query.getName());
                 if(info != null) {
                   oos.writeObject(new HdfsResponse(info.getChunks(), null));
-                  System.out.println(" |-> Chunks returned");
                 } else {
                   System.err.println(" |-> Error : File not found");
                   oos.writeObject(new HdfsResponse(null, new FileNotFoundException("File not found")));
@@ -75,9 +74,11 @@ public class HdfsServer {
               }
               break;
             case GET_CHUNK:
+              System.out.println(" |-> Request chunk of index " + query.getChunk() + " of file " + query.getName());
               try {
                 oos.writeObject(new HdfsResponse(HdfsServer.data.getChunk(query.getName(), query.getChunk()), null));
               } catch (FileNotFoundException e) {
+                System.err.println(" |-> Error : Chunk not found");
                 oos.writeObject(new HdfsResponse(null, e));
               }
               break;
@@ -102,6 +103,7 @@ public class HdfsServer {
                   HdfsServer.name.ajouterFichier(nfile);
                   oos.writeObject(new HdfsResponse(null, null));
                 } catch(AlreadyExists e) {
+                  System.err.println(" |-> Error : File already exists");
                   oos.writeObject(new HdfsResponse(null, e));
                 }
               } else {
@@ -120,10 +122,12 @@ public class HdfsServer {
               }
               break;
             case DEL_CHUNK:
+              System.out.println(" |-> Deleting chunk of file " + query.getName() + ", index : " + query.getChunk());
               try {
                 HdfsServer.data.delChunk(query.getName(), query.getChunk());
                 oos.writeObject(new HdfsResponse(null, null));
               } catch(IOException e) {
+                System.err.println(" |-> Error : Could'nt delete chunk");
                 oos.writeObject(new HdfsResponse(null, e));
               }
               break;
@@ -131,6 +135,7 @@ public class HdfsServer {
               System.out.println(" |-> Delete file " + query.getName());
               if(HdfsServer.name != null) {
                 HdfsServer.name.supprimerFichier(query.getName());
+                oos.writeObject(new HdfsResponse(null, null));
               } else {
                 System.err.println(" |-> Error : Not a NameNode");
                 oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
