@@ -4,13 +4,14 @@ import java.util.Scanner;
 
 public class Console {
 
-    private static String usage = "Usage : java Console [node_root]";
+    private static String usage = "Usage : java Console <node_root>";
 
     private static void showHelp() {
         System.out.print(
-                "create [fname] [format] \t create a fname file into hdfs within format\n" +
-                "cat [fname] \t\t\t\t show fname file content\n" +
-                "delete [fname] \t\t\t\t delete fname file into hdfs\n"
+                "create <fname> <format> \t create a fname file into hdfs within format\n" +
+                "ls \t\t\t\t\t\t\t list hdfs contents\n" +
+                "cat <fname> \t\t\t\t show fname file content\n" +
+                "delete <fname> \t\t\t\t delete fname file into hdfs\n"
         );
     }
 
@@ -23,6 +24,7 @@ public class Console {
             System.out.println(Console.usage);
             System.exit(1);
         }
+        HdfsClient.nameNode = args[0];
         System.out.println("Hdfs console v0:");
         do {
             System.out.print("~$> ");
