@@ -129,4 +129,21 @@ class DataNode {
         file.write(content);
         file.close();
     }
+
+    /**
+     * @return array of file names stored
+     */
+    String[] showChunks() {
+        try {
+            File[] files = this.getFiles();
+            int len = files.length;
+            String[] data = new String[len];
+            for (int i=0; i<len; i++) {
+                data[i] = files[i].getName();
+            }
+            return data;
+        } catch (FileNotFoundException e) {
+            return new String[0];
+        }
+    }
 }

@@ -17,6 +17,8 @@ public class HdfsClient {
         System.out.println("Usage: java hdfs/HdfsClient read <file_hdfs> [file_dst]");
         System.out.println("Usage: java hdfs/HdfsClient write <line|kv> <file_src> [file_hdfs]");
         System.out.println("Usage: java hdfs/HdfsClient delete <file_hdfs>");
+        System.out.println("Usage: java hdfs/HdfsClient list");
+        System.out.println("Usage: java hdfs/HdfsClient chunks [datanode_host]");
     }
 
     private static HdfsResponse request(InetAddress host, HdfsQuery hq) throws Exception {
@@ -161,19 +163,44 @@ public class HdfsClient {
         file.close();
     }
 
+    /**
+     * @param cmd  request command to send for getting files or chunks
+     * @param host host provider
+     * @throws Exception if internal server error append
+     */
+    public static void HdfsList(HdfsQuery.Command cmd, String host) throws Exception {
+        HdfsQuery query = new HdfsQuery(cmd, null);
+        HdfsResponse response = HdfsClient.request(InetAddress.getByName(host), query);
+        String[] files = (String[]) response.getResponse();
+        if (files.length > 0) {
+            for (String file : files) {
+                System.out.println(file);
+            }
+        } else {
+            System.out.println("There is not yet files!");
+        }
+    }
 
     public static void main(String[] args) {
         try {
-            if (args.length < 2) {
+            if (args.length < 1) {
                 usage();
                 return;
             }
 
             switch (args[0]) {
                 case "read":
+                    if (args.length < 2) {
+                        usage();
+                        return;
+                    }
                     HdfsRead(args[1], args.length < 3 ? null : args[2]);
                     break;
                 case "delete":
+                    if (args.length < 2) {
+                        usage();
+                        return;
+                    }
                     HdfsDelete(args[1]);
                     break;
                 case "write":
@@ -189,6 +216,15 @@ public class HdfsClient {
                         return;
                     }
                     HdfsWrite(fmt, args[2], args.length < 4 ? null : args[3], 1);
+                case "list":
+                    HdfsList(HdfsQuery.Command.GET_FILES, HdfsClient.nameNode);
+                    break;
+                case "chunks":
+                    HdfsClient.HdfsList(HdfsQuery.Command.GET_CHUNKS, args.length < 2 ? HdfsClient.nameNode : args[1]);
+                    break;
+                default:
+                    usage();
+                    break;
             }
         } catch (Exception ex) {
             System.err.println("Error : " + ex.getMessage());

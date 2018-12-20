@@ -34,6 +34,14 @@ class NameNode implements Serializable {
 		return this.catalogue.get(nom);
 	}
 
+	int getNbFiles() {
+		return catalogue.size();
+	}
+
+	String[] getAllFileNames() {
+		return catalogue.values().stream().map(InfoFichier::getNom).toArray(String[]::new);
+	}
+
 	public void supprimerFichier(String nom) {
 		this.catalogue.remove(nom);
 	}

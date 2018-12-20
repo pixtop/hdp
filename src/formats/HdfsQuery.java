@@ -4,14 +4,16 @@ import java.io.Serializable;
 
 public class HdfsQuery implements Serializable {
 
-    public enum Command {GET_FILE, // Récupération dataNodes gérant un fichier auprès du nameNode
+    public enum Command {GET_FILE, // Récupération dataNodes gérant un fichier auprès du NameNode
+                        GET_FILES, // Récupération de la liste des meta-fichiers du NameNode
                         GET_CHUNK, // Récupération chunk d'un fichier auprès d'un DataNode
+                        GET_CHUNKS, // Récupération de tous les chunks enregistrer dans un DataNode
                         GET_DATANODES, // Récupération liste data nodes sur le NameNode
                         WRT_FILE, // Écriture sur le NameNode
                         WRT_CHUNK, // Écriture sur un DataNode
                         DEL_CHUNK, // Suppression chunk sur DataNode
                         DEL_FILE // Suppresion file sur NameNode
-                        };
+                        }
 
     private String fname; // nom fichier
 

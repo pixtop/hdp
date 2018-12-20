@@ -73,6 +73,14 @@ public class HdfsServer {
                 oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
               }
               break;
+            case GET_FILES:
+              System.out.println(" |-> Request all files stored in NameNode");
+              if (HdfsServer.name != null && HdfsServer.name.getNbFiles() > 0) {
+                oos.writeObject(new HdfsResponse(HdfsServer.name.getAllFileNames(), null));
+              } else {
+                System.out.println(" |-> NameNode is empty ");
+                oos.writeObject(new HdfsResponse(new String[0], null));
+              }
             case GET_CHUNK:
               System.out.println(" |-> Request chunk of index " + query.getChunk() + " of file " + query.getName());
               try {
@@ -81,6 +89,10 @@ public class HdfsServer {
                 System.err.println(" |-> Error : Chunk not found");
                 oos.writeObject(new HdfsResponse(null, e));
               }
+              break;
+            case GET_CHUNKS:
+              System.out.println(" |-> Request all chunks stored in DataNode");
+              oos.writeObject(new HdfsResponse(HdfsServer.data.showChunks(), null));
               break;
             case GET_DATANODES:
               System.out.println(" |-> Request all dataNodes");
