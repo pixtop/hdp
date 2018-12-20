@@ -84,21 +84,17 @@ class DataNode {
      * @param fname filename
      * @param chunk chunk number
      * @return contents
-     * @throws FileNotFoundException exception if there is not file found
+     * @throws IOException exception if there is not file found or I/O exception
      */
-    String getChunk(String fname, int chunk) throws FileNotFoundException {
+    String getChunk(String fname, int chunk) throws IOException {
 	    String name = this.makeName(fname, chunk);
         File[] files = this.getFiles();
 	    for (File f : files) {
 	        if (f.isFile() && f.getName().equals(name) ) {
-                try {
-                    return this.readFile(f.getPath());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+	            return this.readFile(f.getPath());
             }
         }
-        throw new FileNotFoundException();
+	    throw new FileNotFoundException();
     }
 
     /**

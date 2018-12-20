@@ -37,6 +37,8 @@ public class DataNodeTest extends TestCase {
             assertEquals(this.getContent, this.dataNode.getChunk("test", 0));
         } catch (FileNotFoundException e) {
             fail("Not found test.0");
+        } catch (IOException e) {
+            fail("I/O exception: " + e.getMessage());
         }
     }
 
@@ -44,7 +46,7 @@ public class DataNodeTest extends TestCase {
         try {
             this.dataNode.addChunk("test", 1, this.addContent);
         } catch (IOException e) {
-            fail("Writing error");
+            fail("Writing error: " + e.getMessage());
         }
         assertFalse("Not found writing data", Files.notExists(Paths.get("./data/test.1")));
     }
@@ -55,7 +57,7 @@ public class DataNodeTest extends TestCase {
         } catch (FileNotFoundException e) {
             fail("Not found file to delete");
         } catch (IOException e) {
-            fail("File impossible to delete");
+            fail("File impossible to delete: " + e.getMessage());
         }
         assertTrue("Not found writing data", Files.notExists(Paths.get("./data/test.2")));
     }
