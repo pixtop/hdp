@@ -69,14 +69,13 @@ public class LineFormat implements Format, Serializable {
 	}
 
 	@Override
-	public KV read() {
-		try {
+	/**
+	* @throws IOException si Erreur de format pendant la lecture
+	*/
+	public KV read() throws IOException {
 			String line = this.br.readLine();
 			if(line == null)return null;
 			return new KV(Long.toString(index++), line);
-		} catch (IOException e) {
-			return null;
-		}
 	}
 
 	@Override

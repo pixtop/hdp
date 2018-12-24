@@ -60,7 +60,7 @@ class DataNode {
 	    this(dir);
 
         ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
-        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode), 2, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(new KeepAlive(nameNode), SlaveKeepAlive.delay/2, SlaveKeepAlive.delay, TimeUnit.SECONDS);
     }
 
     private String readFile(String path) throws IOException {

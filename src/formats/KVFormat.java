@@ -69,16 +69,16 @@ public class KVFormat implements Format, Serializable{
     }
 
     @Override
-    public KV read() {
-			try {
+		/**
+		* @throws IOException si Erreur de format pendant la lecture
+		*/
+    public KV read() throws IOException {
 				String line = this.br.readLine();
 				if(line == null)return null;
 				index ++;
 				String part[] = line.split(KV.SEPARATOR);
-				return new KV(part[0], part[1]);
-			} catch (IOException e) {
-				return null;
-			}
+				if(part.length == 2)return new KV(part[0], part[1]);
+				else throw new IOException("File is not in kv format");
     }
 
     @Override

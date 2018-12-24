@@ -13,7 +13,7 @@ import exceptions.*;
 public class HdfsServer {
 
   public static int port = 4242;
-  private static String usage = "Usage : java HdfsServer [node_root] [-n] [-f saved_config_file]";
+  private static String usage = "Serveur lancant un dataNode et optionnellement un nameNode (option -n ou -f)\nUsage : java HdfsServer [node_root] [-n | -f saved_config_file]";
   private static String config_file_output = "HdfsServer.conf";
   private static NameNode name; // NameNode
   private static DataNode data; // DataNode
@@ -59,40 +59,43 @@ public class HdfsServer {
         try {
           switch(query.getCmd()) {
             case GET_FILE:
-              System.out.println(" |-> Request dataNodes handling file " + query.getName());
+              System.out.print(" |-> GET_FILE request");
               if(HdfsServer.name != null) {
-                InfoFichier info = HdfsServer.name.getInfoFichier(query.getName());
-                if(info != null) {
-                  oos.writeObject(new HdfsResponse(info.getChunks(), null));
-                } else {
-                  System.err.println(" |-> Error : File not found");
-                  oos.writeObject(new HdfsResponse(null, new FileNotFoundException("File not found")));
+                if(query.getName() != null) { // Request for dataNodes handling a file
+                  System.out.print(" for file " + query.getName() + "\n");
+                  InfoFichier info = HdfsServer.name.getInfoFichier(query.getName());
+                  if(info != null) {
+                    oos.writeObject(new HdfsResponse(info, null));
+                  } else {
+                    System.err.println(" |-> Error : File not found");
+                    oos.writeObject(new HdfsResponse(null, new FileNotFoundException("File not found")));
+                  }
+                } else { // Request for all files registered in the NameNode
+                  System.out.print(" for the list of all files stored in NameNode\n");
+                  if(HdfsServer.name.getNbFiles() > 0)
+                    oos.writeObject(new HdfsResponse(HdfsServer.name.getAllFileNames(), null));
+                  else
+                    oos.writeObject(new HdfsResponse(new String[0], null));
                 }
               } else {
+                System.out.print("\n");
                 System.err.println(" |-> Error : Not a NameNode");
                 oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
               }
               break;
-            case GET_FILES:
-              System.out.println(" |-> Request all files stored in NameNode");
-              if (HdfsServer.name != null && HdfsServer.name.getNbFiles() > 0) {
-                oos.writeObject(new HdfsResponse(HdfsServer.name.getAllFileNames(), null));
-              } else {
-                System.out.println(" |-> NameNode is empty ");
-                oos.writeObject(new HdfsResponse(new String[0], null));
-              }
             case GET_CHUNK:
-              System.out.println(" |-> Request chunk of index " + query.getChunk() + " of file " + query.getName());
-              try {
-                oos.writeObject(new HdfsResponse(HdfsServer.data.getChunk(query.getName(), query.getChunk()), null));
-              } catch (FileNotFoundException e) {
-                System.err.println(" |-> Error : Chunk not found");
-                oos.writeObject(new HdfsResponse(null, e));
+              if(query.getName() != null) {
+                System.out.println(" |-> Request chunk of index " + query.getChunk() + " of file " + query.getName());
+                try {
+                  oos.writeObject(new HdfsResponse(HdfsServer.data.getChunk(query.getName(), query.getChunk()), null));
+                } catch (FileNotFoundException e) {
+                  System.err.println(" |-> Error : Chunk not found");
+                  oos.writeObject(new HdfsResponse(null, e));
+                }
+              } else {
+                System.out.println(" |-> Request all chunks stored in DataNode");
+                oos.writeObject(new HdfsResponse(HdfsServer.data.showChunks(), null));
               }
-              break;
-            case GET_CHUNKS:
-              System.out.println(" |-> Request all chunks stored in DataNode");
-              oos.writeObject(new HdfsResponse(HdfsServer.data.showChunks(), null));
               break;
             case GET_DATANODES:
               System.out.println(" |-> Request all dataNodes");
@@ -104,15 +107,11 @@ public class HdfsServer {
               }
               break;
             case WRT_FILE:
-              System.out.println(" |-> Recording new file " + query.getName());
+              InfoFichier f = query.getInfo();
+              System.out.println(" |-> Recording new file " + f.getNom() + " of type " + f.getFormat());
               if(HdfsServer.name != null) {
-                InfoFichier nfile = new InfoFichier(query.getName());
-                Map dataNodes = (Map)query.getData(); // Map<Integer, Inet4Address>
-                for(Object i : dataNodes.keySet()) {
-                  nfile.addChunk((Integer)i, (Inet4Address)dataNodes.get((Integer)i));
-                }
                 try {
-                  HdfsServer.name.ajouterFichier(nfile);
+                  HdfsServer.name.ajouterFichier(f);
                   oos.writeObject(new HdfsResponse(null, null));
                 } catch(AlreadyExists e) {
                   System.err.println(" |-> Error : File already exists");
@@ -229,6 +228,10 @@ public class HdfsServer {
       // Création NameNode si pas de fichier de cofig spécifié
       if(HdfsServer.name == null) {
         HdfsServer.name = new NameNode();
+
+        // Si on veut lancer le nameNode depuis un script de configuration avec les dataNodes enregistrés de base
+        // interêt : ne pas attendre de recevoir le keepAlive des DataNodes avant de pouvoir commencer la manip
+        /*
         Scanner input = new Scanner(System.in);
         System.out.println("Enter addresses/hosts of others dataNodes - empty line to stop");
         String line = input.nextLine();
@@ -241,8 +244,8 @@ public class HdfsServer {
             System.exit(1);
           }
           line = input.nextLine();
-        }
-        System.out.println("End of the list -> NameNode started");
+        } */
+        System.out.println("NameNode started");
       }
       // Récupération adresse locale
       try {

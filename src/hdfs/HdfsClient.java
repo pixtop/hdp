@@ -11,14 +11,16 @@ import formats.*;
 public class HdfsClient {
 
     public static String nameNode = "localhost";
-    private static final int taille_chunk = 1000; // Nombre d'enregistrement par chunk
+    private static final int taille_chunk = 10; // Nombre d'enregistrement par chunk
 
     private static void usage() {
-        System.out.println("Usage: java hdfs/HdfsClient read <file_hdfs> [file_dst]");
-        System.out.println("Usage: java hdfs/HdfsClient write <line|kv> <file_src> [file_hdfs]");
-        System.out.println("Usage: java hdfs/HdfsClient delete <file_hdfs>");
-        System.out.println("Usage: java hdfs/HdfsClient list");
-        System.out.println("Usage: java hdfs/HdfsClient chunks [datanode_host]");
+        System.out.println("Usage: java hdfs/HdfsClient [-h <nameNode/dataNode_host>] <command>");
+        System.out.println("Commands:");
+        System.out.println("\tread <file_hdfs> [file_dst]");
+        System.out.println("\twrite <line|kv> <file_src> [file_hdfs]");
+        System.out.println("\tdelete <file_hdfs>");
+        System.out.println("\tlist [file_name]"); // Liste des fichiers dans le nameNode
+        System.out.println("\tchunks"); // Liste des fichiers dans le répertoire du dataNode
     }
 
     private static HdfsResponse request(InetAddress host, HdfsQuery hq) throws Exception {
@@ -36,27 +38,20 @@ public class HdfsClient {
         return response;
     }
 
-    private static Hashtable getDataNodes(String hdfsFname) throws Exception {
-        // Demande chunks du fichier au NameNode
-        HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_FILE, hdfsFname);
-        HdfsResponse response = HdfsClient.request(InetAddress.getByName(HdfsClient.nameNode), query);
-        return (Hashtable) response.getResponse();
-    }
-
     /**
      * @param hdfsFname remote hdfs file name to delete
      * @throws Exception if internal server error append
      */
     public static void HdfsDelete(String hdfsFname) throws Exception {
-
-        Hashtable data_nodes = HdfsClient.getDataNodes(hdfsFname); // Hashtable<Integer,Inet4Address>
+        InfoFichier file = HdfsClient.HdfsList(hdfsFname);
+        Hashtable<Integer,Inet4Address> data_nodes = file.getChunks();
 
         // Suppresion chunks
         HdfsQuery query;
-        for (Object i : data_nodes.keySet()) {
-            Inet4Address addr = (Inet4Address) data_nodes.get(i);
+        for (Integer i : data_nodes.keySet()) {
+            Inet4Address addr = data_nodes.get(i);
             // Demande d'un chunk
-            query = new HdfsQuery(HdfsQuery.Command.DEL_CHUNK, hdfsFname, (Integer) i, null);
+            query = new HdfsQuery(HdfsQuery.Command.DEL_CHUNK, hdfsFname, i, null);
             HdfsClient.request(addr, query);
         }
 
@@ -87,16 +82,18 @@ public class HdfsClient {
                 reader = new KVFormat();
                 break;
         }
+        reader.setFname(localFSSourceFname);
+        reader.open(Format.OpenMode.R);
+
         // Récupération all DataNodes
         HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_DATANODES, null);
         HdfsResponse response = HdfsClient.request(InetAddress.getByName(HdfsClient.nameNode), query);
 
         ArrayList data_nodes = (ArrayList) response.getResponse(); // ArrayList<Inet4Address>
         if (data_nodes.size() == 0) throw new Exception("Not a single DataNode in the system");
-        // System.out.println("Data Nodes récupérés");
 
         // Écriture des chunks
-        Hashtable<Integer, Inet4Address> used_nodes = new Hashtable<>();
+        InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
         int i = 0, index = 0;
         while (true) {
             int j;
@@ -109,14 +106,12 @@ public class HdfsClient {
                 chk.append("\n");
             }
             if (j > 0) {
-                // System.out.print("chunk " + index + " : " + chk);
                 query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, remoteHdfsName, index, chk.toString());
                 Inet4Address data_node = (Inet4Address) data_nodes.get(i);
 
                 // Envoi chunk
-                HdfsClient.request(data_node, query); // Récupération ACK
-                // System.out.println("Chunk " + index + " écrit");
-                used_nodes.put(index, data_node);
+                HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite)
+                newFile.addChunk(index, data_node);
                 i = (i + 1) % data_nodes.size();
                 index += HdfsClient.taille_chunk;
             }
@@ -127,9 +122,8 @@ public class HdfsClient {
         reader.close();
 
         // Écriture sur NameNode
-        query = new HdfsQuery(HdfsQuery.Command.WRT_FILE, remoteHdfsName, used_nodes);
+        query = new HdfsQuery(HdfsQuery.Command.WRT_FILE, newFile);
         HdfsClient.request(InetAddress.getByName(HdfsClient.nameNode), query);
-        // System.out.println("Fichier écrit sur le NameNode");
     }
 
 
@@ -141,21 +135,23 @@ public class HdfsClient {
     public static void HdfsRead(String hdfsFname, String localFSDestFname) throws Exception {
         if (localFSDestFname == null) localFSDestFname = hdfsFname;
 
-        Hashtable data_nodes = HdfsClient.getDataNodes(hdfsFname); // Hashtable<Integer,Inet4Address>
+        InfoFichier f = HdfsClient.HdfsList(hdfsFname);
+
+        Hashtable<Integer,Inet4Address> data_nodes = f.getChunks();
 
         // Récupération chunks
         StringBuilder content = new StringBuilder();
         List<Integer> indexs = new LinkedList<Integer>();
-        for (Object i : data_nodes.keySet()) indexs.add((Integer) i);
+        for (Integer i : data_nodes.keySet()) indexs.add(i);
         Collections.sort(indexs);
         for (Integer i : indexs) {
-            Inet4Address addr = (Inet4Address) data_nodes.get(i);
+            Inet4Address addr = data_nodes.get(i);
 
             // Demande d'un chunk
             HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_CHUNK, hdfsFname, i, null);
             HdfsResponse response = HdfsClient.request(addr, query);
 
-            content.append(response.getResponse());
+            content.append((String)response.getResponse());
         }
 
         FileWriter file = new FileWriter(localFSDestFname);
@@ -164,68 +160,102 @@ public class HdfsClient {
     }
 
     /**
-     * @param cmd  request command to send for getting files or chunks
-     * @param host host provider
-     * @throws Exception if internal server error append
-     */
-    public static void HdfsList(HdfsQuery.Command cmd, String host) throws Exception {
-        HdfsQuery query = new HdfsQuery(cmd, null);
-        HdfsResponse response = HdfsClient.request(InetAddress.getByName(host), query);
-        String[] files = (String[]) response.getResponse();
-        if (files.length > 0) {
-            for (String file : files) {
-                System.out.println(file);
-            }
-        } else {
-            System.out.println("There is not yet files!");
-        }
+    * List des fichiers enregistrés sur le NameNode
+    * @return Array of String contenant les noms des fichiers
+    * @throws Exception shit happens
+    */
+    public static String[] HdfsList() throws Exception {
+      HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_FILE, null);
+      return (String [])HdfsClient.request(InetAddress.getByName(HdfsClient.nameNode), query).getResponse();
+    }
+
+    /**
+    * Information sur un fichier enregistré
+    * @return InfoFichier
+    * @throws Exception si le fichier n'existe pas dans le hdfs
+    */
+    public static InfoFichier HdfsList(String fname) throws Exception {
+      HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_FILE, fname);
+      return (InfoFichier)HdfsClient.request(InetAddress.getByName(HdfsClient.nameNode), query).getResponse();
+    }
+
+    /**
+    * List des chunks enregistrés sur un DatNode
+    * @param host DatNode en question
+    * @return Array of String contenant les noms des chunks
+    * @throws Exception shit happens
+    */
+    public static String[] HdfsChunks(String host) throws Exception {
+      HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_CHUNK, null);
+      return (String [])HdfsClient.request(InetAddress.getByName(host), query).getResponse();
     }
 
     public static void main(String[] args) {
         try {
-            if (args.length < 1) {
-                usage();
-                return;
-            }
-
-            switch (args[0]) {
+            if (args.length >= 1) {
+              int i = 0;
+              if(args[0].equals("-h")) {
+                if(args.length >= 2) {
+                  HdfsClient.nameNode = args[1];
+                  i += 2;
+                } else {
+                  System.err.println("You must specify a host");
+                  return;
+                }
+              }
+              switch(args[i]) {
                 case "read":
-                    if (args.length < 2) {
+                    if (args.length < i + 2) {
                         usage();
                         return;
                     }
-                    HdfsRead(args[1], args.length < 3 ? null : args[2]);
+                    HdfsRead(args[i+1], args.length < (i+3) ? null : args[i+2]);
                     break;
                 case "delete":
-                    if (args.length < 2) {
+                    if (args.length < i + 2) {
                         usage();
                         return;
                     }
-                    HdfsDelete(args[1]);
+                    HdfsDelete(args[i + 1]);
                     break;
                 case "write":
                     Format.Type fmt;
-                    if (args.length < 3) {
+                    if (args.length < i + 3) {
                         usage();
                         return;
                     }
-                    if (args[1].equals("line")) fmt = Format.Type.LINE;
-                    else if (args[1].equals("kv")) fmt = Format.Type.KV;
+                    if (args[i+1].equals("line")) fmt = Format.Type.LINE;
+                    else if (args[i+1].equals("kv")) fmt = Format.Type.KV;
                     else {
                         usage();
                         return;
                     }
-                    HdfsWrite(fmt, args[2], args.length < 4 ? null : args[3], 1);
+                    HdfsWrite(fmt, args[i+2], args.length < (i+4) ? null : args[i+3], 1);
+                    break;
                 case "list":
-                    HdfsList(HdfsQuery.Command.GET_FILES, HdfsClient.nameNode);
+                    if(args.length < (i+2)) {
+                      String[] l = HdfsClient.HdfsList();
+                      if(l.length > 0) {
+                        for(int j = 0;j < l.length; j ++) System.out.println(l[j]);
+                      } else System.out.println("Looks empty");
+                    } else {
+                      InfoFichier f = HdfsClient.HdfsList(args[i + 1]);
+                      System.out.println("File " + f.getNom() + ", format " + f.getFormat().toString());
+                      Hashtable<Integer,Inet4Address> data_nodes = f.getChunks();
+                      for(Integer j : data_nodes.keySet())
+                        System.out.println("\tChunk index " + j.toString() + " on dataNode " + data_nodes.get(j).toString());
+                    }
                     break;
                 case "chunks":
-                    HdfsClient.HdfsList(HdfsQuery.Command.GET_CHUNKS, args.length < 2 ? HdfsClient.nameNode : args[1]);
+                    String[] l = HdfsClient.HdfsChunks(HdfsClient.nameNode); // préciser l'host avec l'option -h
+                    if(l.length > 0) {
+                      for(int j = 0;j < l.length; j ++) System.out.println(l[j]);
+                    } else System.out.println("Looks empty");
                     break;
                 default:
                     usage();
-                    break;
-            }
+              }
+            } else HdfsClient.usage();
         } catch (Exception ex) {
             System.err.println("Error : " + ex.getMessage());
         }

@@ -39,7 +39,7 @@ class NameNode implements Serializable {
 	}
 
 	String[] getAllFileNames() {
-		return catalogue.values().stream().map(InfoFichier::getNom).toArray(String[]::new);
+		return catalogue.values().stream().map(InfoFichier::getNom).toArray(String[]::new); // Résultat = tableau de String
 	}
 
 	public void supprimerFichier(String nom) {

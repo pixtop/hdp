@@ -9,6 +9,7 @@ public interface Format extends FormatReader, FormatWriter, Serializable {
 
   /**
   @throws IOException Si erreur dans l'ouverture du fichier
+  * Voir utilisation dans main de LineFormat et KVFormat
   */
 	public void open(OpenMode mode) throws IOException;
 	public void close();

@@ -12,7 +12,8 @@ import java.util.concurrent.*;
 public class SlaveKeepAlive extends Thread{
 
 	// Ces messages doivent etre envoyes sur le port 8080
-	static int port = 8080;
+	public static int port = 8080;
+	public static int delay = 10; // Délai entre les réveils du KeepAlive (en secondes)
 
 	private NameNode master;
 	private ArrayList<Inet4Address> dataNodes;
@@ -28,7 +29,7 @@ public class SlaveKeepAlive extends Thread{
 	public void run() {
 		// Toutes les 5 secondes on supprime les dataNodes qui n'ont pas repondu au keepAlive
 		ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
-		scheduler.scheduleAtFixedRate(new KeepAlive(this), 5, 5, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(new KeepAlive(this), SlaveKeepAlive.delay, SlaveKeepAlive.delay, TimeUnit.SECONDS);
 		ServerSocket serveur;
 
 		try {
@@ -77,11 +78,11 @@ public class SlaveKeepAlive extends Thread{
 			for (Inet4Address inet4Address : slave.getDataNodes()) {
 				// Un des dataNode n'a pas repondu -> On le supprime
 				slave.getMaster().removeDataNode(inet4Address);
+				System.out.println("\033[31mDataNode " + inet4Address.toString() + " down, removed from dataNodes list\033[0m");
 			}
 			// On remet dataNodes a 0 et on recommence
 			ArrayList<Inet4Address> dataNodes = new ArrayList<>(slave.getMaster().getDataNodes());
 			slave.setDataNodes(dataNodes);
-
 		}
 	}
 
@@ -104,6 +105,7 @@ public class SlaveKeepAlive extends Thread{
 				if (!slave.getMaster().estPresente(addr)) {
 					// Si c'est une nouvelle adresse on l'ajoute
 					slave.getMaster().addDataNode(addr);
+					System.out.println("\033[32mNew DataNode identified : " + addr.toString() + "\033[0m");
 				} else {
 					// Sinon on la supprime de la liste des DataNodes qui n'ont pas
 					// repondu
