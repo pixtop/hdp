@@ -10,8 +10,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 
 import formats.Format;
+import formats.Format.OpenMode;
 import formats.KV;
 import formats.KVFormat;
 import map.MapReduce;
@@ -49,9 +51,11 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 			KVFormat reader = new KVFormat();
 			reader.setFname(name);
 			KV kv;
+			reader.open(OpenMode.R);
 			while ((kv = reader.read()) != null) {
 				ois.writeObject(kv);
 			}
+			reader.close();
 			ois.writeObject(null);
 			s.close();
 		} catch (IOException e) {
@@ -63,19 +67,44 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 
 	@Override
 	public void recevoir(int nbData,int port,String fname) throws RemoteException{
-		System.out.println("Recevoir en cours");
 		ServerSocket ss;
+		ArrayList<SlaveRecevoir> sl = new ArrayList<SlaveRecevoir>();
 		try {
 			ss = new ServerSocket(port);
 			for(int i=0;i<nbData;i++){
-				SlaveRecevoir sl = new SlaveRecevoir(ss.accept(),fname);
-				sl.start();
+				sl.add(new SlaveRecevoir(ss.accept(),fname));
+				sl.get(i).start();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("Recevoir fin");
+
+		ArrayList<KV> resultat_recep = new ArrayList<KV>();
+		for (int i=0; i<nbData; i++) {
+			try {
+				sl.get(i).join();
+				resultat_recep.addAll(sl.get(i).getResultat());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		KVFormat writer = new KVFormat();
+		writer.setFname(fname);
+		try {
+			writer.open(OpenMode.W);
+			for (KV kv : resultat_recep) {
+				writer.write(kv);
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
+		System.out.println("Reception terminée !");
 
 	}
 

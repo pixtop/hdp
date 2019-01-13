@@ -6,7 +6,9 @@ import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 // Les messages KeepAlive sont des Inet4Address (l'addresse de DataNode)
 public class SlaveKeepAlive extends Thread{
@@ -26,6 +28,7 @@ public class SlaveKeepAlive extends Thread{
 		this.dataNodes = new ArrayList<>(this.master.getDataNodes());
 	}
 
+	@Override
 	public void run() {
 		// Toutes les 5 secondes on supprime les dataNodes qui n'ont pas repondu au keepAlive
 		ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
@@ -74,6 +77,7 @@ public class SlaveKeepAlive extends Thread{
 			this.slave = slave;
 		}
 
+		@Override
 		public void run() {
 			for (Inet4Address inet4Address : slave.getDataNodes()) {
 				// Un des dataNode n'a pas repondu -> On le supprime
@@ -95,6 +99,7 @@ public class SlaveKeepAlive extends Thread{
 			this.slave = slave;
 		}
 
+		@Override
 		public void run() {
 			ObjectInputStream ois;
 			try {

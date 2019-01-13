@@ -1,11 +1,24 @@
 package hdfs;
 
-import java.net.*;
-import java.io.*;
-import java.lang.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
-import formats.*;
+import formats.Format;
+import formats.HdfsQuery;
+import formats.HdfsResponse;
+import formats.KV;
+import formats.KVFormat;
+import formats.LineFormat;
 
 
 public class HdfsClient {
@@ -90,6 +103,7 @@ public class HdfsClient {
         HdfsResponse response = HdfsClient.request(InetAddress.getByName(HdfsClient.nameNode), query);
 
         ArrayList data_nodes = (ArrayList) response.getResponse(); // ArrayList<Inet4Address>
+
         if (data_nodes.size() == 0) throw new Exception("Not a single DataNode in the system");
 
         // Écriture des chunks

@@ -1,6 +1,13 @@
 package formats;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Serializable;
+
+import config.Project;
 
 public class KVFormat implements Format, Serializable{
 
@@ -27,14 +34,14 @@ public class KVFormat implements Format, Serializable{
 					switch(mode) {
 						case R:
 								try {
-									this.input = new FileReader(fname);
+									this.input = new FileReader(Project.PATH+"data/"+fname);
 									this.br = new BufferedReader(input);
 								} catch (FileNotFoundException e) {
 									throw new IOException(e.getMessage());
 								}
 							break;
 						case W:
-								this.output = new FileWriter(fname);
+								this.output = new FileWriter(Project.PATH+"data/"+fname);
 							break;
 					}
 			} else throw new IOException("No file specified - use setFname()");

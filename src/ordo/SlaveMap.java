@@ -14,13 +14,17 @@ public class SlaveMap extends Thread{
 	private Job job;
 	private MapReduce mr;
 	private CallBack cb;
+	private String inputName;
+	private String outputName;
 
-	public SlaveMap(String addr, int port, Job job, MapReduce mr,CallBack cb){
+	public SlaveMap(String addr, int port, Job job, MapReduce mr,CallBack cb,String inputname,String outputname){
 		this.addr = addr;
 		this.port = port;
 		this.job = job;
 		this.mr = mr;
 		this.cb = cb;
+		this.inputName = inputname;
+		this.outputName = outputname;
 	}
 	@Override
 	public void run(){
@@ -30,25 +34,23 @@ public class SlaveMap extends Thread{
 			obj = (Daemon) Naming.lookup("//" + addr+":"+port+"/Daemon_dataNode");
 			System.out.print("Connecté à "+"//" + addr+":"+port+"/Daemon_dataNode"+ " pour map");
 
-			Format ti=null;
-			Format to=null;
+			Format reader_map=null;
+			Format writer_map=null;
 			if (job.getInputformat() == Format.Type.LINE) {
-				ti = new LineFormat();
+				reader_map = new LineFormat();
 			} else if (job.getInputformat() == Format.Type.KV){
-				ti = new KVFormat();
+				reader_map = new KVFormat();
 			}
-			ti.setFname(job.getInputfname());
+			reader_map.setFname(this.inputName);
 
 			if (job.getOutputformat() == Format.Type.LINE) {
-				to = new LineFormat();
-
-
+				writer_map = new LineFormat();
 			} else if (job.getOutputformat() == Format.Type.KV){
-				to = new KVFormat();
+				writer_map = new KVFormat();
 			}
-			to.setFname(job.getInputfname());
+			writer_map.setFname(this.outputName);
 
-			obj.runMap(mr,ti ,to , cb);
+			obj.runMap(mr,reader_map ,writer_map , cb);
 
 		} catch (Exception e){
 			e.printStackTrace();
