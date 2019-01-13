@@ -1,41 +1,144 @@
-O mon jardin d'eau fraîche et d'ombre
-Ma danse d'être mon c?ur sombre
-Mon ciel des étoiles sans nombre
-Ma barque au loin douce à ramer
-Heureux celui qui devient sourd
-Au chant s'il n'est de son amour
-Aveugle au jour d'après son jour
-Ses yeux sur toi seule fermés
-Heureux celui qui meurt d'aimer
-Heureux celui qui meurt d'aimer
-D'aimer si fort ses lèvres closes
-Qu'il n'ait besoin de nulle chose
-Hormis le souvenir des roses
-A jamais de toi parfumées
-Celui qui meurt même à douleur
-A qui sans toi le monde est leurre
-Et n'en retient que tes couleurs
-Il lui suffit qu'il t'ait nommée
-Heureux celui qui meurt d'aimer
-Heureux celui qui meurt d'aimer
-Mon enfant dit-il ma chère âme
-Le temps de te connaître ô femme
-L'éternité n'est qu'une pâme
-Au feu dont je suis consumé
-Il a dit ô femme et qu'il taise
-Le nom qui ressemble à la braise
-A la bouche rouge à la fraise
-A jamais dans ses dents formée
-Heureux celui qui meurt d'aimer
-Heureux celui qui meurt d'aimer
-Il a dit ô femme et s'achève
-Ainsi la vie, ainsi le rêve
-Et soit sur la place de grève
-Ou dans le lit accoutumé
-Jeunes amants vous dont c'est l'âge
-Entre la ronde et le voyage
-Fou s'épargnant qui se croit sage
-Criez à qui vous veut blâmer
-Heureux celui qui meurt d'aimer
-Heureux celui qui meurt d'aimer
-Louis Aragon
+dit-il<->1<->1<->1
+Ou<->1<->1<->1
+celui<->9<->1<->1
+Aragon<->1<->1<->1
+dans<->2<->1<->1
+douce<->1<->1<->1
+Ma<->2<->1<->1
+étoiles<->1<->1<->1
+fort<->1<->1<->1
+Criez<->1<->1<->1
+t'ait<->1<->1<->1
+enfant<->1<->1<->1
+te<->1<->1<->1
+jardin<->1<->1<->1
+d'être<->1<->1<->1
+vous<->2<->1<->1
+devient<->1<->1<->1
+closes<->1<->1<->1
+parfumées<->1<->1<->1
+amants<->1<->1<->1
+lit<->1<->1<->1
+couleurs<->1<->1<->1
+rouge<->1<->1<->1
+jamais<->2<->1<->1
+sur<->2<->1<->1
+son<->2<->1<->1
+douleur<->1<->1<->1
+amour<->1<->1<->1
+lui<->1<->1<->1
+croit<->1<->1<->1
+je<->1<->1<->1
+jour<->2<->1<->1
+consumé<->1<->1<->1
+ramer<->1<->1<->1
+le<->5<->1<->1
+nulle<->1<->1<->1
+Au<->2<->1<->1
+nombre<->1<->1<->1
+l'âge<->1<->1<->1
+ma<->1<->1<->1
+fraîche<->1<->1<->1
+ainsi<->1<->1<->1
+Le<->2<->1<->1
+est<->1<->1<->1
+grève<->1<->1<->1
+Celui<->1<->1<->1
+à<->5<->1<->1
+roses<->1<->1<->1
+vie,<->1<->1<->1
+blâmer<->1<->1<->1
+ciel<->1<->1<->1
+feu<->1<->1<->1
+temps<->1<->1<->1
+L'éternité<->1<->1<->1
+formée<->1<->1<->1
+suffit<->1<->1<->1
+sans<->2<->1<->1
+connaître<->1<->1<->1
+Hormis<->1<->1<->1
+c'est<->1<->1<->1
+a<->2<->1<->1
+dents<->1<->1<->1
+Jeunes<->1<->1<->1
+au<->2<->1<->1
+c?ur<->1<->1<->1
+sombre<->1<->1<->1
+s'il<->1<->1<->1
+Heureux<->9<->1<->1
+dit<->2<->1<->1
+qui<->14<->1<->1
+d'après<->1<->1<->1
+leurre<->1<->1<->1
+s'épargnant<->1<->1<->1
+Ainsi<->1<->1<->1
+Louis<->1<->1<->1
+nom<->1<->1<->1
+d'aimer<->8<->1<->1
+de<->5<->1<->1
+ô<->3<->1<->1
+ressemble<->1<->1<->1
+chose<->1<->1<->1
+d'eau<->1<->1<->1
+barque<->1<->1<->1
+nommée<->1<->1<->1
+femme<->3<->1<->1
+qu'une<->1<->1<->1
+toi<->3<->1<->1
+fraise<->1<->1<->1
+braise<->1<->1<->1
+bouche<->1<->1<->1
+seule<->1<->1<->1
+Et<->2<->1<->1
+des<->2<->1<->1
+sage<->1<->1<->1
+Aveugle<->1<->1<->1
+lèvres<->1<->1<->1
+D'aimer<->1<->1<->1
+soit<->1<->1<->1
+Ses<->1<->1<->1
+chant<->1<->1<->1
+Mon<->2<->1<->1
+âme<->1<->1<->1
+yeux<->1<->1<->1
+la<->6<->1<->1
+meurt<->9<->1<->1
+n'est<->2<->1<->1
+monde<->1<->1<->1
+Il<->3<->1<->1
+loin<->1<->1<->1
+n'en<->1<->1<->1
+se<->1<->1<->1
+d'ombre<->1<->1<->1
+mon<->2<->1<->1
+Entre<->1<->1<->1
+que<->1<->1<->1
+accoutumé<->1<->1<->1
+fermés<->1<->1<->1
+tes<->1<->1<->1
+Qu'il<->1<->1<->1
+dont<->2<->1<->1
+retient<->1<->1<->1
+suis<->1<->1<->1
+veut<->1<->1<->1
+sourd<->1<->1<->1
+place<->1<->1<->1
+s'achève<->1<->1<->1
+taise<->1<->1<->1
+A<->4<->1<->1
+voyage<->1<->1<->1
+qu'il<->2<->1<->1
+pâme<->1<->1<->1
+souvenir<->1<->1<->1
+O<->1<->1<->1
+même<->1<->1<->1
+danse<->1<->1<->1
+ses<->2<->1<->1
+ronde<->1<->1<->1
+rêve<->1<->1<->1
+Fou<->1<->1<->1
+si<->1<->1<->1
+chère<->1<->1<->1
+et<->4<->1<->1
+n'ait<->1<->1<->1
+besoin<->1<->1<->1
