@@ -27,6 +27,8 @@ public class Hidoop_lancement {
 
 	public static void lancer(String fname,String ADDRLOCAL){
 		try {
+			long t1 = System.currentTimeMillis();
+
 			InfoFichier info_f = HdfsClient.HdfsList(fname);
 			Hashtable<Integer, Inet4Address> addrs =  info_f.getChunks();
 
@@ -38,7 +40,8 @@ public class Hidoop_lancement {
 	        j.setReducer(ADDRLOCAL);
 	        j.startJob(new MyMapReduce());
 
-
+	        long t2 = System.currentTimeMillis();
+	        System.out.println("time in ms ="+(t2-t1));
 		} catch (Exception e) {
 			System.out.println("Erreur, lancement annulé");
 		}

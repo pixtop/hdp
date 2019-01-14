@@ -1,5 +1,8 @@
 all : server client daemon interface console
 
+clean : 
+	rm */*.class
+
 server : HdfsServer.class
 
 client : HdfsClient.class

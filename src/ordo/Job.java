@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.util.Hashtable;
 
+import exceptions.ErreurJobException;
 import formats.Format;
 import formats.KVFormat;
 import formats.LineFormat;
@@ -170,13 +171,4 @@ public class Job implements JobInterface{
 
 	}
 
-} class ErreurJobException extends Exception {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -3467805248467775246L;
-
-	public ErreurJobException(){
-		super();
-	}
 }

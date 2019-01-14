@@ -20,18 +20,23 @@ private String addr;
 	}
 	@Override
 	public void run(){
-
+		int maxTries = 3;
+		int count = 0;
 		Daemon obj;
-		try {
-			obj = (Daemon) Naming.lookup("//" + addr+":"+port+"/Daemon_dataNode");
-			obj.envoyerVers(addr_vers,port2,fname);
-
-		} catch (RemoteException e) {
-			System.out.println("Erreur de l'invocation à distance");
-		} catch (IOException e) {
-			System.out.println("Ce fichier n'existe pas !");
-		} catch (Exception e1) {
-			System.out.println("Erreur innatendue dans envoyerVers");
+		while(true) {
+    			try {
+		  		obj = (Daemon) Naming.lookup("//" + addr+":"+port+"/Daemon_dataNode");
+				obj.envoyerVers(addr_vers,port2,fname);
+				break;
+       			} catch (RemoteException e) {
+				System.out.println("Erreur de l'invocation à distance");
+			} catch (IOException e) {
+		   		if (++count == maxTries) {
+					System.out.println("Ce fichier:"+fname+" n'existe pas !");
+		   		}
+			} catch (Exception e1) {
+				System.out.println("Erreur innatendue dans envoyerVers");
+			}
 		}
 
 	}

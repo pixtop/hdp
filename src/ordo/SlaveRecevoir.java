@@ -3,6 +3,7 @@ package ordo;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import formats.KV;
@@ -25,6 +26,9 @@ public class SlaveRecevoir extends Thread{
 
 	@Override
 	public void run(){
+	int maxTries = 3;
+	int count = 0;
+		while(true) {
 
 		try {
 			ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
@@ -32,13 +36,18 @@ public class SlaveRecevoir extends Thread{
 			while ((kv = (KV) ois.readObject())!=null) {
 				this.resultat.add(kv);
 			}
+			break;
 
-		} catch ( IOException e) {
-			System.out.println("Ce fichier n'existe pas");
-			Thread.currentThread().interrupt();
-		}  catch (Exception e1) {
-			System.out.println("Erreur innatendue dans Recevoir");
-			Thread.currentThread().interrupt();
+			} catch (RemoteException e) {
+				System.out.println("Erreur de l'invocation à distance");
+			} catch (IOException e) {
+		   		if (++count == maxTries) {
+					System.out.println("Ce fichier:"+fname+" n'existe pas !");
+		   		}
+			} catch (Exception e1) {
+				System.out.println("Erreur innatendue dans envoyerVers");
+			}
 		}
+
 	}
 }

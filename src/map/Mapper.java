@@ -1,10 +1,11 @@
 package map;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import formats.FormatReader;
 import formats.FormatWriter;
 
 public interface Mapper extends Serializable {
-	public void map(FormatReader reader, FormatWriter writer);
+	public void map(FormatReader reader, FormatWriter writer) throws IOException;
 }

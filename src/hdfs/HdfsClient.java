@@ -24,7 +24,7 @@ import formats.LineFormat;
 public class HdfsClient {
 
     public static String nameNode = "localhost";
-    private static final int taille_chunk = 10; // Nombre d'enregistrement par chunk
+    private static final int taille_chunk = 1000; // Nombre d'enregistrement par chunk
 
     private static void usage() {
         System.out.println("Usage: java hdfs/HdfsClient [-h <nameNode/dataNode_host>] <command>");

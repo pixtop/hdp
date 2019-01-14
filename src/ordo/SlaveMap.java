@@ -31,7 +31,10 @@ public class SlaveMap extends Thread{
 	@Override
 	public void run(){
 
+		int maxTries = 3;
+		int count = 0;
 		Daemon obj;
+		while(true) {
 
 			try {
 
@@ -55,17 +58,18 @@ public class SlaveMap extends Thread{
 			}
 			writer_map.setFname(this.outputName);
 			obj.runMap(mr,reader_map ,writer_map , cb);
+			break;
 
 			} catch (RemoteException e) {
 				System.out.println("Erreur de l'invocation à distance");
-				Thread.currentThread().interrupt();
 			} catch (IOException e) {
-				System.out.println("Ce fichier n'existe pas !");
-				Thread.currentThread().interrupt();
+		   		if (++count == maxTries) {
+					System.out.println("Ce fichier:"+inputName+" ou "+ outputName+" n'existe pas !");
+		   		}
 			} catch (Exception e1) {
-				System.out.println("Erreur innatendue dans Map");
-				Thread.currentThread().interrupt();
+				System.out.println("Erreur innatendue dans envoyerVers");
 			}
+		}
 
 
 

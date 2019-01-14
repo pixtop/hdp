@@ -88,14 +88,18 @@ public class InterfaceMapReduce {
                 case "l":
                 case "lancer":
                 	try {
+                		long t1 = System.currentTimeMillis();
+
                 		j.setInputFname(lcmd[1]);
                 		Integer i = 0;
                 		for (String h : list_dataNode) {
                 			j.addDataNode(i,h);
-                			i = i + 10;
+                			i = i + 1000;
                 		}
-
                 		j.startJob(new MyMapReduce());
+
+                		long t2 = System.currentTimeMillis();
+            	        System.out.println("time in ms ="+(t2-t1));
                 	} catch (Exception e){
                 		System.out.println("Erreur, utilisation: lancer $FILENAME ou l $FILENAME");
                 		System.out.println("Les fragments doivent être nommé $FILENAME.0 , File$FILENAME.10 ,  File$FILENAME.20 , etc");

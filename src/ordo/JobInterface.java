@@ -1,5 +1,6 @@
 package ordo;
 
+import exceptions.ErreurJobException;
 import formats.Format;
 import map.MapReduce;
 
