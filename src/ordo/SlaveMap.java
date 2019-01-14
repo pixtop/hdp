@@ -1,6 +1,8 @@
 package ordo;
 
+import java.io.IOException;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 
 import formats.Format;
 import formats.KVFormat;
@@ -30,9 +32,12 @@ public class SlaveMap extends Thread{
 	public void run(){
 
 		Daemon obj;
-		try {
+
+			try {
+
 			obj = (Daemon) Naming.lookup("//" + addr+":"+port+"/Daemon_dataNode");
-			System.out.print("Connecté à "+"//" + addr+":"+port+"/Daemon_dataNode"+ " pour map");
+
+			System.out.println("Connecté à "+"//" + addr+":"+port+"/Daemon_dataNode"+ " pour map");
 
 			Format reader_map=null;
 			Format writer_map=null;
@@ -49,12 +54,20 @@ public class SlaveMap extends Thread{
 				writer_map = new KVFormat();
 			}
 			writer_map.setFname(this.outputName);
-
 			obj.runMap(mr,reader_map ,writer_map , cb);
 
-		} catch (Exception e){
-			e.printStackTrace();
-		}
+			} catch (RemoteException e) {
+				System.out.println("Erreur de l'invocation à distance");
+				Thread.currentThread().interrupt();
+			} catch (IOException e) {
+				System.out.println("Ce fichier n'existe pas !");
+				Thread.currentThread().interrupt();
+			} catch (Exception e1) {
+				System.out.println("Erreur innatendue dans Map");
+				Thread.currentThread().interrupt();
+			}
+
+
 
 	}
 }

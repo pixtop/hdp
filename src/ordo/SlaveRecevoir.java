@@ -33,9 +33,12 @@ public class SlaveRecevoir extends Thread{
 				this.resultat.add(kv);
 			}
 
-		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch ( IOException e) {
+			System.out.println("Ce fichier n'existe pas");
+			Thread.currentThread().interrupt();
+		}  catch (Exception e1) {
+			System.out.println("Erreur innatendue dans Recevoir");
+			Thread.currentThread().interrupt();
 		}
 	}
 }

@@ -29,79 +29,75 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 	public Daemon_dataNode() throws RemoteException {}
 
 	@Override
-	public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) throws RemoteException {
+	public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) throws RemoteException,IOException {
 		System.out.println("RunMap en cours !");
+		reader.open(OpenMode.R);
+		writer.open(OpenMode.W);
 		m.map(reader, writer);
-		// TODO: utliser le callback (peut etre?)
+		reader.close();
+		writer.close();
 	}
 
 	@Override
-	public void runReduce(MapReduce m, Format reader, Format writer, CallBack cb) throws RemoteException {
+	public void runReduce(MapReduce m, Format reader, Format writer, CallBack cb) throws RemoteException,IOException {
 		System.out.println("RunReduce en cours !");
+		reader.open(OpenMode.R);
+		writer.open(OpenMode.W);
 		m.reduce(reader, writer);
-		// TODO: utliser le callback (peut etre?)
+		reader.close();
+		writer.close();
 	}
 
 	@Override
-	public void envoyerVers(String addr,int port,String name) throws RemoteException{
+	public void envoyerVers(String addr,int port,String name) throws RemoteException,IOException{
 
-		try {
-			Socket s = new Socket(addr,port);
-			ObjectOutputStream ois = new ObjectOutputStream(s.getOutputStream());
-			KVFormat reader = new KVFormat();
-			reader.setFname(name);
-			KV kv;
-			reader.open(OpenMode.R);
-			while ((kv = reader.read()) != null) {
-				ois.writeObject(kv);
-			}
-			reader.close();
-			ois.writeObject(null);
-			s.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		Socket s = new Socket(addr,port);
+		ObjectOutputStream ois = new ObjectOutputStream(s.getOutputStream());
+		KVFormat reader = new KVFormat();
+		reader.setFname(name);
+		KV kv;
+		reader.open(OpenMode.R);
+		while ((kv = reader.read()) != null) {
+			ois.writeObject(kv);
 		}
+		reader.close();
+		ois.writeObject(null);
+		s.close();
+
 
 	}
 
 	@Override
-	public void recevoir(int nbData,int port,String fname) throws RemoteException{
+	public void recevoir(int nbData,int port,String fname) throws RemoteException,IOException,InterruptedException{
 		ServerSocket ss;
 		ArrayList<SlaveRecevoir> sl = new ArrayList<SlaveRecevoir>();
-		try {
-			ss = new ServerSocket(port);
-			for(int i=0;i<nbData;i++){
-				sl.add(new SlaveRecevoir(ss.accept(),fname));
-				sl.get(i).start();
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		ss = new ServerSocket(port);
+		for(int i=0;i<nbData;i++){
+			sl.add(new SlaveRecevoir(ss.accept(),fname));
+			sl.get(i).start();
 		}
+
 
 		ArrayList<KV> resultat_recep = new ArrayList<KV>();
 		for (int i=0; i<nbData; i++) {
-			try {
+
 				sl.get(i).join();
 				resultat_recep.addAll(sl.get(i).getResultat());
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+
 
 		}
 
 		KVFormat writer = new KVFormat();
 		writer.setFname(fname);
-		try {
-			writer.open(OpenMode.W);
-			for (KV kv : resultat_recep) {
-				writer.write(kv);
-			}
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		writer.open(OpenMode.W);
+		for (KV kv : resultat_recep) {
+			writer.write(kv);
 		}
+		writer.close();
+
 
 
 		System.out.println("Reception terminée !");
@@ -126,6 +122,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 			System.out.println("Bound in registry.");
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.out.println("Erreur critique de lancement du Daemon");
 		}
 	}
 

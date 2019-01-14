@@ -2,9 +2,9 @@ package ordo;
 
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.LinkedHashSet;
 import java.util.Scanner;
 
 import application.MyMapReduce;
@@ -16,40 +16,35 @@ import hdfs.InfoFichier;
 
 public class Hidoop_lancement {
 
-	public static void lancer(String fname){
-		try {
-			Runtime.getRuntime().exec("java ordo.Daemon_dataNode 6060");
+	public static void help(){
+		 System.out.println("		HELP:");
+		 System.out.println("	lancer $fname  lance MapReduce sur la fichier $fname");
+         System.out.println("	ajouter $hostname: lance datanode sur la machine $hostname");
+         System.out.println("	write $fname: met le fichier de nom $fname dans le système hdfs");
+         System.out.println("	delete $fname: supprime le fichier de nom $fname du système hdfs");
+         System.out.println("	read $fname: recupère le fichier de nom $fname du système hdfs");
+	}
 
+	public static void lancer(String fname,String ADDRLOCAL){
+		try {
 			InfoFichier info_f = HdfsClient.HdfsList(fname);
 			Hashtable<Integer, Inet4Address> addrs =  info_f.getChunks();
-			String user = System.getenv("USER");
-
-			for (Inet4Address host : new LinkedHashSet<Inet4Address>(addrs.values()) ) {
-				String host_s = host.toString().split("/")[0];
-				System.out.println("ssh "+user+"@"+host_s+" cd "+Project.PATH+"src && java ordo.Daemon_dataNode 6060");
-				Runtime.getRuntime().exec("ssh "+user+"@"+host_s+" cd "+Project.PATH+"src && java ordo.Daemon_dataNode 6060");
-
-			}
-			Thread.sleep(3000);
 
 			Job j = new Job();
 	        j.setInputFormat(Format.Type.LINE);
 	        j.setOutputformat(Format.Type.KV);
 	        j.setInputFname(fname);
 	        j.setDataNode(addrs);
-	        j.setReducer("yoda");
+	        j.setReducer(ADDRLOCAL);
 	        j.startJob(new MyMapReduce());
 
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Erreur, lancement annulé");
 		}
 
 	}
 	public static void main(String[] args){
-		InterfaceMapReduce.showHelp();
-
 		Thread thread = new Thread(){
 		    @Override
 			public void run(){
@@ -57,7 +52,17 @@ public class Hidoop_lancement {
 				HdfsServer.main(ah);
 		    }
 		  };
-		  thread.start();
+		thread.start();
+		String ADDRLOCAL = "";
+
+		try {
+			Runtime.getRuntime().exec("java ordo.Daemon_dataNode 6060");
+			ADDRLOCAL = InetAddress.getLocalHost().getHostName();
+		} catch (Exception e) {
+			System.out.println("Erreur critique, vérifiez que aucun programme n'utilise le port 6060.");
+			System.exit(1);
+		}
+
 
 		String user = System.getenv("USER");
 		ArrayList<String> hosts = new ArrayList<String>();
@@ -65,8 +70,8 @@ public class Hidoop_lancement {
         Scanner input = new Scanner(System.in);
         String cmd;
         boolean exit = false;
-
         System.out.println("Console Hidoop v0:");
+        Hidoop_lancement.help();
         do {
             System.out.print("~$> ");
             cmd = input.nextLine();
@@ -81,7 +86,8 @@ public class Hidoop_lancement {
 					try {
 						String host = lcmd[1];
 	            		hosts.add(host);
-						Runtime.getRuntime().exec("ssh "+user+"@"+host+" cd "+Project.PATH+"src && java hdfs.HdfsServer yoda");
+						Runtime.getRuntime().exec("ssh "+user+"@"+host+" cd "+Project.PATH+"src && java hdfs.HdfsServer "+ADDRLOCAL);
+						Runtime.getRuntime().exec("ssh "+user+"@"+host+" cd "+Project.PATH+"src && java ordo.Daemon_dataNode 6060");
 					} catch (Exception e1) {
 						System.out.println("Erreur ajout datanode");
 					}
@@ -117,10 +123,11 @@ public class Hidoop_lancement {
                 	}
                     break;
                 case "lancer":
-                	Hidoop_lancement.lancer(lcmd[1]);
+                	Hidoop_lancement.lancer(lcmd[1],ADDRLOCAL);
                 	break;
                 default:
                     System.out.println("Commande inconnue.");
+                    Hidoop_lancement.help();
                     break;
             }
         } while (!exit);

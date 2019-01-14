@@ -1,51 +1,43 @@
 package ordo;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import application.MyMapReduce;
+import config.Project;
 import formats.Format;
 
 public class InterfaceMapReduce {
 
 	public static void showHelp(){
 		System.out.print(
-				"help, h: Affiche l'aide \n" +
-                "exit, e: Quitte l'invité de commandes \n" +
-                "data $HOSTNAME, d $HOSTNAME : Ajoute un dataNode sur $HOSTNAME \n" +
-                "lancer $FILENAME, l $FILENAME : Lance un mapReduce sur la fichier d'entrée de nom $FILENAME \n"
+				"help, h : Affiche l'aide \n" +
+                "exit, e : Quitte l'invité de commandes \n" +
+                "data $HOSTNAME $, d $HOSTNAME : Ajoute un dataNode sur $HOSTNAME\n" +
+                "lancer $FILENAME, l $FILENAME : Lance un mapReduce sur la fichier d'entrée de nom $FILENAME \n" +
+                "data_rm $HOSTNAME : Supprime un dataNode sur $HOSTNAME \n"
         );
 	}
 
 	public static void main(String[] args){
+		ArrayList<String> list_dataNode = new ArrayList<String>();
 		InterfaceMapReduce.showHelp();
-
+		String user = System.getenv("USER");
 		Job j = new Job();
         j.setInputFormat(Format.Type.LINE);
         j.setOutputformat(Format.Type.KV);
 
-        try {
-/*        	Process add_red = Runtime.getRuntime().exec("java ordo/Daemon_dataNode 6060");
 
-    		if (add_red.exitValue()==0) {
-    			System.out.println("Reducer lancé sur "+local);
-    			j.setReducer(local);
-    		} else {
-    			System.out.print("Erreur critique");
-    			System.exit(1);
-    		}
-*/
-        	Process getlocal = Runtime.getRuntime().exec("hostname");
-        	getlocal.waitFor();
-        	byte[] b = new byte[256];
-        	getlocal.getInputStream().read(b);
-        	String local = new String(b,"UTF-8").split("\n")[0];
-
-        	System.out.println("Reducer lancé sur "+local);
-        	j.setReducer(local);
-
-
-		} catch (Exception e) {
-			e.printStackTrace();
+    	String local;
+		try {
+			Runtime.getRuntime().exec("java ordo.Daemon_dataNode 6060");
+			local = InetAddress.getLocalHost().getHostName();
+			System.out.println("Reducer lancé sur "+local);
+	    	j.setReducer(local);
+		} catch (Exception e1) {
+			System.out.println("Erreur critique, vérifiez que aucun programme n'utilise le port 6060.");
 			System.exit(1);
 		}
 
@@ -71,34 +63,43 @@ public class InterfaceMapReduce {
                 case "d":
                 case "data":
                 	try {
-                		/*
-            			String user = System.getenv("USER");
-                		Process add_data = Runtime.getRuntime().exec("ssh "+user+"@"+lcmd[1]+" java "+Project.PATH+"/src/ordo/Daemon_dataNode 6060");
-                		add_data.waitFor();
+
+						Runtime.getRuntime().exec("ssh "+user+"@"+lcmd[1]+" cd "+Project.PATH+"src && java ordo.Daemon_dataNode 6060");
+                		list_dataNode.add(lcmd[1]);
                 		System.out.println("DataNode lancé sur "+lcmd[1]);
 
-                		System.out.println("ssh "+user+"@"+lcmd[1]+" java "+Project.PATH+"/src/ordo/Daemon_dataNode 6060");
-
-                		if (add_data.exitValue()==0){
-                			j.ajouterDataNode(lcmd[1]);
-                		} else {
-                			System.out.println("Erreur, ajout annulé");
-                		}
-                		*/
-                		System.out.println("DataNode lancé sur "+lcmd[1]);
-                	//	j.ajouterDataNode(lcmd[1]);
+                	}catch (UnknownHostException e1){
+                		System.out.println("Host Inconnu");
 
                 	} catch (Exception e){
-                		System.out.println("Erreur, utilisation: data $HOSTNAME ou d $HOSTNAME");
+                		System.out.println("Erreur dans l'ajout d'un dataNode");
+                	}
+                	break;
+                case "data_rm":
+                	try {
+                		Runtime.getRuntime().exec("ssh "+user+"@"+lcmd[1]+" pkill java");
+                		list_dataNode.remove(lcmd[1]);
+                		System.out.println("DataNode supprimé de "+lcmd[1]);
+
+                	} catch (Exception e){
+                		System.out.println("Erreur dans la suppresion d'un dataNode");
                 	}
                 	break;
                 case "l":
                 case "lancer":
                 	try {
                 		j.setInputFname(lcmd[1]);
+                		Integer i = 0;
+                		for (String h : list_dataNode) {
+                			j.addDataNode(i,h);
+                			i = i + 10;
+                		}
+
                 		j.startJob(new MyMapReduce());
                 	} catch (Exception e){
                 		System.out.println("Erreur, utilisation: lancer $FILENAME ou l $FILENAME");
+                		System.out.println("Les fragments doivent être nommé $FILENAME.0 , File$FILENAME.10 ,  File$FILENAME.20 , etc");
+                		System.out.println("Pour pouvoir les différencier en local");
                 	}
 
                 	break;
@@ -107,6 +108,13 @@ public class InterfaceMapReduce {
                     break;
             }
         } while (!exit);
+        try {
+        	for (String host : list_dataNode) {
+    			Runtime.getRuntime().exec("ssh "+user+"@"+host+" pkill java");
+    		}
+    		Runtime.getRuntime().exec("pkill java");
+        } catch (Exception e){}
+
         System.exit(0);
 	}
 

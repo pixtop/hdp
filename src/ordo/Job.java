@@ -1,10 +1,8 @@
 package ordo;
 
 import java.net.Inet4Address;
-import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.Hashtable;
 
 import formats.Format;
@@ -61,122 +59,124 @@ public class Job implements JobInterface{
 	public void setDataNode(Hashtable<Integer, Inet4Address> t){
 		liste_addr = t;
 	}
+	public void addDataNode(Integer i, String v) throws UnknownHostException{
+		Inet4Address av;
+		av = (Inet4Address) Inet4Address.getByName(v);
+		liste_addr.put(i, av);
+	}
 	public void setReducer(String hostname){
 		addr_reduce = hostname;
 	}
 
 	@Override
-	public void startJob (MapReduce mr) {
+	public void startJob (MapReduce mr) throws ErreurJobException {
+		try {
 
-		int NB_NODES = liste_addr.size();
-		SlaveMap[] slaves = new SlaveMap[NB_NODES];
+			int NB_NODES = liste_addr.size();
+			SlaveMap[] slaves = new SlaveMap[NB_NODES];
 
-		this.outputfname = this.inputfname+"-map";
-		this.outputfnameReduce = this.inputfname+"-red";
+			this.outputfname = this.inputfname+"-map";
+			this.outputfnameReduce = this.inputfname+"-red";
 
 
 
-		int ii = 0;
-		// TODO: changer la valeur de port / ajouter un call pour obtenir la liste des addresses / ajouter un vrai callback
-		for (Integer i: liste_addr.keySet()) {
-			try {
-			//	Daemon obj = (Daemon) Naming.lookup("//" + "localhost:"+port+"/Daemon_dataNode");
+			int ii = 0;
+			// TODO: changer la valeur de port / ajouter un call pour obtenir la liste des addresses / ajouter un vrai callback
+			for (Integer i: liste_addr.keySet()) {
 				slaves[ii] = new SlaveMap(liste_addr.get(i).toString().split("/")[0],port_remote,this,mr,new CallBack(),this.inputfname+"."+i,this.outputfname+"."+i);
 				slaves[ii].start();
 				ii++;
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 
-		// On attend la fin de l'execution des maps, on utilise pas callback
-		for (int i=0; i<NB_NODES; i++) {
-			try {
+			}
+
+			// On attend la fin de l'execution des maps, on utilise pas callback
+			for (int i=0; i<NB_NODES; i++) {
 				slaves[i].join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+
 			}
-		}
-		System.out.println("------ FIN MAP ------");
+			System.out.println("------ FIN MAP ------");
 
-		System.out.println("Debut de reception");
+			System.out.println("Debut de reception");
 
-		// On obtient l'addresse du datanode qui fait le reduce
-		int i_reduce = 0;
-		Daemon obj;
-		Thread thread = new Thread(){
-		    @Override
-			public void run(){
-		    	try {
-					Daemon obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port_remote+"/Daemon_dataNode");
-					obj.recevoir(NB_NODES, port_data_transfer, outputfnameReduce);
-				} catch (MalformedURLException | RemoteException | NotBoundException e1) {
-					e1.printStackTrace();
-				}
-		    }
-		  };
-		  thread.start();
+			// On obtient l'addresse du datanode qui fait le reduce
+			int i_reduce = 0;
+			Daemon obj;
+			Thread thread = new Thread(){
+			    @Override
+				public void run(){
+						Daemon obj;
+						try {
+							obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port_remote+"/Daemon_dataNode");
+							obj.recevoir(NB_NODES, port_data_transfer, outputfnameReduce);
+						} catch (Exception e) {
+							System.out.println("Erreur reception.");
+							Thread.currentThread().interrupt();
+						}
+			    }
+			  };
+			  thread.start();
 
+			ii = 0;
+			SlaveEnvoyerVers[] slaves_e = new SlaveEnvoyerVers[NB_NODES];
+			// Il faut tout envoyer vers le reducer
+			for (Integer i: liste_addr.keySet()) {
+				if (liste_addr.get(i).toString().split("/")[0] != addr_reduce) {
 
+						slaves_e[ii] = new SlaveEnvoyerVers(liste_addr.get(i).toString().split("/")[0],addr_reduce,port_remote,this.outputfname+"."+i,port_data_transfer);
+						slaves_e[ii].start();
+						ii++;
 
-		ii = 0;
-		SlaveEnvoyerVers[] slaves_e = new SlaveEnvoyerVers[NB_NODES];
-		// Il faut tout envoyer vers le reducer
-		for (Integer i: liste_addr.keySet()) {
-			if (liste_addr.get(i).toString().split("/")[0] != addr_reduce) {
-				try {
-					slaves_e[ii] = new SlaveEnvoyerVers(liste_addr.get(i).toString().split("/")[0],addr_reduce,port_remote,this.outputfname+"."+i,port_data_transfer);
-					slaves_e[ii].start();
-					ii++;
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			} else {
-				i_reduce = i;
-			}
-		}
-
-		for (int i=0; i<NB_NODES; i++) {
-			if (i!= i_reduce) {
-				try {
-					slaves_e[i].join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				} else {
+					i_reduce = i;
 				}
 			}
 
-		}
-		try {
-			thread.join();
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
+			for (int i=0; i<NB_NODES; i++) {
+				if (i!= i_reduce) {
 
-		System.out.println("Fin de reception");
-		System.out.println("Debut de Reduce");
+						slaves_e[i].join();
+				}
 
-		try {
-			obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port_remote+"/Daemon_dataNode");
-			System.out.println("Connecté à "+"//" + addr_reduce+":"+port_remote+"/Daemon_dataNode"+" pour reduce");
-			Format reader_reduce=null;
-			Format writer_reduce=null;
-			if (this.outputformat == Format.Type.LINE) {
-				reader_reduce = new LineFormat();
-				writer_reduce = new LineFormat();
-			} else if (this.outputformat == Format.Type.KV){
-				reader_reduce = new KVFormat();
-				writer_reduce = new KVFormat();
 			}
-			reader_reduce.setFname(this.outputfnameReduce);
-			writer_reduce.setFname(this.outputfnameReduce+"fin");
-			obj.runReduce(mr, reader_reduce, writer_reduce, new CallBack());
-		} catch (MalformedURLException | RemoteException | NotBoundException e) {
-			e.printStackTrace();
+
+				thread.join();
+
+
+			System.out.println("Fin de reception");
+			System.out.println("Debut de Reduce");
+
+
+				obj = (Daemon) Naming.lookup("//" + addr_reduce +":"+port_remote+"/Daemon_dataNode");
+				System.out.println("Connecté à "+"//" + addr_reduce+":"+port_remote+"/Daemon_dataNode"+" pour reduce");
+				Format reader_reduce=null;
+				Format writer_reduce=null;
+				if (this.outputformat == Format.Type.LINE) {
+					reader_reduce = new LineFormat();
+					writer_reduce = new LineFormat();
+				} else if (this.outputformat == Format.Type.KV){
+					reader_reduce = new KVFormat();
+					writer_reduce = new KVFormat();
+				}
+				reader_reduce.setFname(this.outputfnameReduce);
+				writer_reduce.setFname(this.outputfnameReduce+"fin");
+				obj.runReduce(mr, reader_reduce, writer_reduce, new CallBack());
+
+
+			System.out.println("------ FIN REDUCE ------");
+		} catch (Exception e){
+			System.out.println("Erreur d'éxécution du Job MapReduce");
+			throw(new ErreurJobException());
 		}
-
-		System.out.println("------ FIN REDUCE ------");
-
 
 	}
 
+} class ErreurJobException extends Exception {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -3467805248467775246L;
+
+	public ErreurJobException(){
+		super();
+	}
 }

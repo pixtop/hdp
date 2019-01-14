@@ -1,6 +1,8 @@
 package ordo;
 
+import java.io.IOException;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 
 public class SlaveEnvoyerVers extends Thread{
 
@@ -24,8 +26,12 @@ private String addr;
 			obj = (Daemon) Naming.lookup("//" + addr+":"+port+"/Daemon_dataNode");
 			obj.envoyerVers(addr_vers,port2,fname);
 
-		} catch (Exception e){
-			e.printStackTrace();
+		} catch (RemoteException e) {
+			System.out.println("Erreur de l'invocation à distance");
+		} catch (IOException e) {
+			System.out.println("Ce fichier n'existe pas !");
+		} catch (Exception e1) {
+			System.out.println("Erreur innatendue dans envoyerVers");
 		}
 
 	}

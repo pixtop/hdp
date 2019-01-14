@@ -1,7 +1,7 @@
 package config;
 
 public class Project {
-	public static String PATH = "/home/mdubois5/2A/Prog_concurrente/Projet/hdp/";
+	public static String PATH = System.getProperty("user.dir")+"/../";
 
 
 }
