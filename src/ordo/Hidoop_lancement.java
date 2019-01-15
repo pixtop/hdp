@@ -19,9 +19,9 @@ public class Hidoop_lancement {
 		 System.out.println("		HELP:");
 		 System.out.println("	lancer $fname  lance MapReduce sur la fichier $fname");
          System.out.println("	ajouter $hostname: lance datanode sur la machine $hostname");
-         System.out.println("	write $fname: met le fichier de nom $fname dans le système hdfs");
+         System.out.println("	write $PATH_source: met qui se trouve au bout de $PATH_source dans le système hdfs");
          System.out.println("	delete $fname: supprime le fichier de nom $fname du système hdfs");
-         System.out.println("	read $fname: recupère le fichier de nom $fname du système hdfs");
+         System.out.println("	read $fname $PATH_cible: recupère le fichier de nom $fname du système hdfs et l'écrit dans le fichier ou bout de $PATH_cible");
 	}
 
 	public static void lancer(String fname,String ADDRLOCAL){

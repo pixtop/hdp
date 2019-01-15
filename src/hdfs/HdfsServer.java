@@ -247,7 +247,6 @@ public class HdfsServer {
           is_data = false;
         break;
         default:
-        	System.out.println("path "+args[i]);
           HdfsServer.nodeRoot = args[i];
       }
     }
