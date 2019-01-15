@@ -99,6 +99,7 @@ public class Daemon_dataNode extends UnicastRemoteObject implements Daemon{
 		writer.close();
 
 
+		ss.close();
 
 		System.out.println("Reception terminée !");
 

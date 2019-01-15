@@ -7,8 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 
-import config.Project;
-
 public class LineFormat implements Format, Serializable {
 
 	private static final long serialVersionUID = -9146586647773108023L;
@@ -34,14 +32,14 @@ public class LineFormat implements Format, Serializable {
 				switch(mode) {
 					case R:
 							try {
-								this.input = new FileReader(Project.PATH+"data/"+fname);
+								this.input = new FileReader(fname);
 								this.br = new BufferedReader(input);
 							} catch (FileNotFoundException e) {
 								throw new IOException(e.getMessage());
 							}
 						break;
 					case W:
-							this.output = new FileWriter(Project.PATH+"data/"+fname);
+							this.output = new FileWriter(fname);
 						break;
 				}
 		} else throw new IOException("No file specified - use setFname()");

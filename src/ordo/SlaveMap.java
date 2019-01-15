@@ -39,9 +39,7 @@ public class SlaveMap extends Thread{
 			try {
 
 			obj = (Daemon) Naming.lookup("//" + addr+":"+port+"/Daemon_dataNode");
-
-			System.out.println("Connecté à "+"//" + addr+":"+port+"/Daemon_dataNode"+ " pour map");
-
+			
 			Format reader_map=null;
 			Format writer_map=null;
 			if (job.getInputformat() == Format.Type.LINE) {
