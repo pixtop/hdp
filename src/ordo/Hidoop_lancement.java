@@ -54,7 +54,7 @@ public class Hidoop_lancement {
 		Thread thread = new Thread(){
 		    @Override
 			public void run(){
-		    	String[] ah = {"-n"};
+		    	String[] ah = {"../data","-n","--noData"};
 				HdfsServer.main(ah);
 		    }
 		  };
@@ -92,7 +92,7 @@ public class Hidoop_lancement {
 					try {
 						String host = lcmd[1];
 	            		hosts.add(host);
-						Runtime.getRuntime().exec("ssh "+user+"@"+host+" cd "+Project.PATH+"src && java hdfs.HdfsServer "+ADDRLOCAL);
+						Runtime.getRuntime().exec("ssh "+user+"@"+host+" cd "+Project.PATH+"src && java hdfs.HdfsServer ../data -h "+ADDRLOCAL);
 						Runtime.getRuntime().exec("ssh "+user+"@"+host+" cd "+Project.PATH+"src && java ordo.Daemon_dataNode 6060");
 					} catch (Exception e1) {
 						System.out.println("Erreur ajout datanode");

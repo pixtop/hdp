@@ -1,6 +1,13 @@
 package hdfs;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -240,6 +247,7 @@ public class HdfsServer {
           is_data = false;
         break;
         default:
+        	System.out.println("path "+args[i]);
           HdfsServer.nodeRoot = args[i];
       }
     }

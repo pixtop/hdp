@@ -14,8 +14,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import config.Project;
-
 class DataNode {
 
     private class KeepAlive implements Runnable {
@@ -127,7 +125,7 @@ class DataNode {
      * @throws IOException exception if writing is impossible
      */
     void addChunk(String fname, int chunk, String content) throws IOException {
-        FileWriter file = new FileWriter(Project.PATH + "data/" + makeName(fname, chunk));
+        FileWriter file = new FileWriter(this.dir.getPath() + "/" + makeName(fname, chunk));
         file.write(content);
         file.close();
     }
