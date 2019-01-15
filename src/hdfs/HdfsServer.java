@@ -1,17 +1,13 @@
 package hdfs;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 import exceptions.AlreadyExists;
 import exceptions.NotANameNode;
@@ -22,7 +18,7 @@ import formats.HdfsResponse;
 public class HdfsServer {
 
   public static int port = 4242;
-  private static String usage = "Serveur lancant un dataNode et optionnellement un nameNode (option -n ou -f)\nUsage : java HdfsServer [node_root] [-n | -f saved_config_file]";
+  private static String usage = "Serveur lancant un dataNode et optionnellement un nameNode (option -n ou -f)\nUsage : java HdfsServer [node_root] [-n | -f saved_config_file] [-h nameNode_host]\nSi option --noData précisée, aucun dataNode n'est pas lancé";
   private static String config_file_output = "HdfsServer.conf";
   private static NameNode name; // NameNode
   private static DataNode data; // DataNode
@@ -181,11 +177,12 @@ public class HdfsServer {
 
   // Lancer le seveur hdfs
   // Lance un dataNode et un nameNode en plus si l'arg nameNode est passé en ligne de commande
-  /*
+
   public static void main(String[] args) {
 
     HdfsServer.name = null; // NameNode si on a spécifié l'option -n
-    boolean is_data = false; // Si on a spécifié l'option -n
+    boolean is_name = false; // Si on a spécifié l'option -n
+    boolean is_data = true;
     InetAddress name_addr = null; // Adresse du NameNode
     SlaveKeepAlive keepalive; // keepAlive du NameNode
     HdfsServer.nodeRoot = "."; // Path ou s'enregistrerons les fichiers
@@ -194,16 +191,25 @@ public class HdfsServer {
     for(int i = 0;i < args.length; i ++) {
       switch(args[i]) {
         case "-h":
+          if(++i < args.length) {
+            try {
+              name_addr = Inet4Address.getByName(args[i]);
+            } catch (UnknownHostException e) {
+              System.err.println("Unknown host " + e.getMessage());
+              System.exit(1);
+            }
+            continue;
+          }
         case "--help":
           System.out.println(HdfsServer.usage);
           System.exit(0);
         case "nameNode":
         case "namenode":
         case "-n":
-          is_data = true;
+          is_name = true;
           break;
         case "-f":
-          is_data = true;
+          is_name = true;
           if(++i < args.length) {
             try {
               FileInputStream file = new FileInputStream(args[i]);
@@ -230,12 +236,15 @@ public class HdfsServer {
             System.exit(1);
           }
         break;
+        case "--noData":
+          is_data = false;
+        break;
         default:
           HdfsServer.nodeRoot = args[i];
       }
     }
     // Construction NameNode(si voulu et vaut null) + dataNode
-    if(is_data) {
+    if(is_name) {
       // Création NameNode si pas de fichier de cofig spécifié
       if(HdfsServer.name == null) {
         HdfsServer.name = new NameNode();
@@ -255,34 +264,37 @@ public class HdfsServer {
             System.exit(1);
           }
           line = input.nextLine();
-        }
+        } */
         System.out.println("NameNode started");
       }
       // Récupération adresse locale
-      try {
-        name_addr = InetAddress.getLocalHost();
-      } catch (UnknownHostException e) {
-        System.err.println("Error looking for hostname : " + e.getMessage());
-        System.exit(1);
+      if(name_addr == null) {
+        try {
+          name_addr = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+          System.err.println("Error looking for hostname : " + e.getMessage());
+          System.exit(1);
+        }
       }
 
 
     	  // Lancement du SlaveKeepAlive
-          keepalive = new SlaveKeepAlive(HdfsServer.name);
-      		keepalive.start();
-          System.out.println("SlaveKeepAlive started (NameNode utility)");
+        keepalive = new SlaveKeepAlive(HdfsServer.name);
+      	keepalive.start();
+        System.out.println("SlaveKeepAlive started (NameNode utility)");
 
-
-
-    } else {
-      Scanner input = new Scanner(System.in);
-      System.out.println("Enter address/host of the NameNode");
-      String line = input.nextLine();
-      try {
-        name_addr = Inet4Address.getByName(line);
-      } catch (UnknownHostException e) {
-        System.err.println("Unknown host " + e.getMessage());
-        System.exit(1);
+    }
+    if(is_data) {
+      if(name_addr == null) {
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter address/host of the NameNode");
+        String line = input.nextLine();
+        try {
+          name_addr = Inet4Address.getByName(line);
+        } catch (UnknownHostException e) {
+          System.err.println("Unknown host " + e.getMessage());
+          System.exit(1);
+        }
       }
       // Lancement dataNode
       try {
@@ -342,129 +354,6 @@ public class HdfsServer {
       t.start();
     }
 
-  }*/
-
-//Lancer le seveur hdfs
- // Lance un dataNode et un nameNode en plus si l'arg nameNode est passé en ligne de commande
- public static void main(String[] args) {
-
-   HdfsServer.name = null; // NameNode si on a spécifié l'option -n
-   boolean is_data = false; // Si on a spécifié l'option -n
-   InetAddress name_addr = null; // Adresse du NameNode
-   SlaveKeepAlive keepalive; // keepAlive du NameNode
-   HdfsServer.nodeRoot = "."; // Path ou s'enregistrerons les fichiers
-
-   if (args[0].equals("-n")) {
-	   is_data = true;
-   }
-   // Traitement des arguments
-   // Construction NameNode(si voulu et vaut null) + dataNode
-   if(is_data) {
-     // Création NameNode si pas de fichier de cofig spécifié
-     if(HdfsServer.name == null) {
-       HdfsServer.name = new NameNode();
-
-       // Si on veut lancer le nameNode depuis un script de configuration avec les dataNodes enregistrés de base
-       // interêt : ne pas attendre de recevoir le keepAlive des DataNodes avant de pouvoir commencer la manip
-       /*
-       Scanner input = new Scanner(System.in);
-       System.out.println("Enter addresses/hosts of others dataNodes - empty line to stop");
-       String line = input.nextLine();
-        while (!line.equals("")) {
-         try {
-           Inet4Address addr = (Inet4Address)Inet4Address.getByName(line);
-           HdfsServer.name.addDataNode(addr);
-         } catch (UnknownHostException e) {
-           System.err.println("Unknown host " + e.getMessage());
-           System.exit(1);
-         }
-         line = input.nextLine();
-       } */
-       System.out.println("NameNode started");
-     }
-     // Récupération adresse locale
-     try {
-       name_addr = InetAddress.getLocalHost();
-     } catch (UnknownHostException e) {
-       System.err.println("Error looking for hostname : " + e.getMessage());
-       System.exit(1);
-     }
-
-
-   	  // Lancement du SlaveKeepAlive
-         keepalive = new SlaveKeepAlive(HdfsServer.name);
-     		keepalive.start();
-         System.out.println("SlaveKeepAlive started (NameNode utility)");
-
-
-
-   } else {
-     String line = args[0];
-
-     try {
-       name_addr = Inet4Address.getByName(line);
-     } catch (UnknownHostException e) {
-       System.err.println("Unknown host " + e.getMessage());
-       System.exit(1);
-     }
-     // Lancement dataNode
-     try {
-       HdfsServer.data = new DataNode(HdfsServer.nodeRoot, (Inet4Address)name_addr);
-     } catch (IOException e) {
-       System.err.println("DataNode error : " + e.getMessage());
-       System.exit(1);
-     }
-     System.out.println("DataNode started");
-   }
-
-
-   // Thread lance a l'arret du serveur -> Enregistrer les données(du NameNode) sur le disque
-   Runtime run = Runtime.getRuntime();
-   run.addShutdownHook(new Thread(){
-
-     @Override
-     public void run()
-     {
-       try {
-         if(HdfsServer.name != null) {
-           FileOutputStream file = new FileOutputStream(HdfsServer.nodeRoot + '/' + HdfsServer.config_file_output);
-           ObjectOutputStream oos = new ObjectOutputStream(file);
-           oos.writeObject(HdfsServer.name);
-           oos.close();
-           file.close();
-           System.out.println(" -> NameNode data saved to " + HdfsServer.config_file_output);
-         } else System.out.println(" -> Shutdown completed");
-         // méthodes sauvegardes de données du DataNode TODO
-       } catch (Exception e) {
-         System.err.println(" -> Error while saving : " + e.getMessage());
-         System.err.println("Shutdown without saving data");
-       }
-     }
-
-   });
-
-   // Socket serveur à l'ecoute de client
-   ServerSocket serv_socket = null;
-   try {
-     serv_socket = new ServerSocket(HdfsServer.port);
-   } catch (IOException e) {
-     System.err.println("Port" + HdfsServer.port + " already in use");
-     System.exit(1);
-   }
-
-   // Attente de connexion
-   while(true) {
-     Socket socket = null;
-     try {
-       socket = serv_socket.accept();
-     } catch (IOException e) {
-       System.err.println("Error acceptance new client connexion : " + e.getMessage());
-       continue;
-     }
-     Thread t = new Thread(new HdfsServer.Traitement(socket));
-     t.start();
-   }
-
- }
+  }
 
 }
