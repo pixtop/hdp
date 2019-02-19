@@ -112,35 +112,31 @@ public class HdfsClient {
         System.out.println("Taille fichier : " + reader.getSize() + " octets");
         System.out.println("Nombre dataNodes : " + data_nodes.size());
         System.out.println("Taille min chunks : " + taille_chunk_min);
-        System.out.println("Taille chunks selectionnée : " + taille_chunk);
+        System.out.println("Taille min chunks selectionnée : " + taille_chunk);
 
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
-        int i = 0, index = 0;
-        while (true) {
-            long j;
+        int i = 0;
+        for(;;) {
             StringBuilder chk = new StringBuilder();
-
+            long index = reader.getIndex();
             // Création du chunk par lecture du fichier
-            for (j = 0; j < taille_chunk; j = reader.getIndex()) {
+            for (long j = index; j < index + taille_chunk; j = reader.getIndex()) {
                 KV rd = reader.read();
                 if (rd == null) break;
-
                 if (fmt == Format.Type.LINE) chk.append(rd.v);
                 else chk.append(rd.k).append(KV.SEPARATOR).append(rd.v);
                 chk.append("\n");
             }
-            if (j > 0) {
-                query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, remoteHdfsName, index, chk.toString());
+            if (chk.length() > 0) {
+                query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, remoteHdfsName, (int)index, chk.toString()); // À faire : faire du param index un long
                 Inet4Address data_node = (Inet4Address) data_nodes.get(i);
 
                 // Envoi chunk
                 HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite)
-                newFile.addChunk(index, data_node);
-                i = (i + 1) % data_nodes.size();
-                index += taille_chunk;
-            }
-            if (j < taille_chunk) break;
+                newFile.addChunk((int)index, data_node);
+                i ++;
+            } else break;
         }
 
         // Fermeture fichier
