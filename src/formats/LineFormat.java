@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.File;
 
 public class LineFormat implements Format, Serializable {
 
@@ -80,7 +81,7 @@ public class LineFormat implements Format, Serializable {
 	public KV read() throws IOException {
 			String line = this.br.readLine();
 			if(line == null)return null;
-			return new KV(Long.toString(index++), line);
+			return new KV(Long.toString(index += line.getBytes().length), line);
 	}
 
 	@Override
@@ -88,11 +89,16 @@ public class LineFormat implements Format, Serializable {
 		if(output != null) {
 			try {
 				output.write(record.v + "\n");
-				index ++;
+				index += record.v.getBytes().length + 1;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public long getSize() {
+		return (new File(fname)).length();
 	}
 
 	/* Test */

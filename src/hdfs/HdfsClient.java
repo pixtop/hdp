@@ -24,7 +24,7 @@ import formats.LineFormat;
 public class HdfsClient {
 
     public static String nameNode = "localhost";
-    private static final int taille_chunk = 1000; // Nombre d'enregistrement par chunk
+    private static final int taille_chunk_min = 1000; // taille minimale en octet d'un chunk (si taille du fichier inf à ce min, pas de division)
 
     private static void usage() {
         System.out.println("Usage: java hdfs/HdfsClient [-h <nameNode/dataNode_host>] <command>");
@@ -106,15 +106,26 @@ public class HdfsClient {
 
         if (data_nodes.size() == 0) throw new Exception("Not a single DataNode in the system");
 
+        long taille_chunk = reader.getSize() / data_nodes.size();
+        taille_chunk = taille_chunk > taille_chunk_min ? taille_chunk : taille_chunk_min;
+
+        System.out.println("Taille fichier : " + reader.getSize() + " octets");
+        System.out.println("Nombre dataNodes : " + data_nodes.size());
+        System.out.println("Taille min chunks : " + taille_chunk_min);
+        System.out.println("Taille chunks selectionnée : " + taille_chunk);
+
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
         int i = 0, index = 0;
         while (true) {
-            int j;
+            long j;
             StringBuilder chk = new StringBuilder();
-            for (j = 0; j < HdfsClient.taille_chunk; j++) {
+
+            // Création du chunk par lecture du fichier
+            for (j = 0; j < taille_chunk; j = reader.getIndex()) {
                 KV rd = reader.read();
                 if (rd == null) break;
+
                 if (fmt == Format.Type.LINE) chk.append(rd.v);
                 else chk.append(rd.k).append(KV.SEPARATOR).append(rd.v);
                 chk.append("\n");
@@ -127,9 +138,9 @@ public class HdfsClient {
                 HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite)
                 newFile.addChunk(index, data_node);
                 i = (i + 1) % data_nodes.size();
-                index += HdfsClient.taille_chunk;
+                index += taille_chunk;
             }
-            if (j != HdfsClient.taille_chunk) break;
+            if (j < taille_chunk) break;
         }
 
         // Fermeture fichier

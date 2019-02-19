@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.File;
 
 public class KVFormat implements Format, Serializable{
 
@@ -14,7 +15,7 @@ public class KVFormat implements Format, Serializable{
 		private FileReader input;
 		private FileWriter output;
 		private BufferedReader br;
-		private long index; // Nombre d'enregistrements lu
+		private long index; // Nombre d'octets lu/écrit
 
     public KVFormat() {
 			input = null;
@@ -80,7 +81,7 @@ public class KVFormat implements Format, Serializable{
     public KV read() throws IOException {
 				String line = this.br.readLine();
 				if(line == null)return null;
-				index ++;
+				index += line.getBytes().length;
 				String part[] = line.split(KV.SEPARATOR);
 				if(part.length == 2)return new KV(part[0], part[1]);
 				else throw new IOException("File is not in kv format");
@@ -91,12 +92,17 @@ public class KVFormat implements Format, Serializable{
 			if(output != null) {
 				try {
 					output.write(record.k + KV.SEPARATOR + record.v + "\n");
-					index ++;
+					index += record.k.getBytes().length + record.v.getBytes().length + 1 + KV.SEPARATOR.getBytes().length;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
     }
+
+		@Override
+		public long getSize() {
+			return (new File(fname)).length();
+		}
 
     public static void main(String[] args) {
 			try {
