@@ -1,0 +1,20 @@
+Tâches réalisées :
+
+ -> Renforcement du système hdfs : mise en place de chunks de taille variable, donc un seul chunk par fichier par dataNode, plus efficace pour le map.
+
+ -> Test de hidoop sur de gros fichier (de 5Go à 10Go), avec un cluster de 5 machines/dataNodes + comparaison évolution de l'efficacité avec le traitement séquentiel selon l'évolution de la taille du fichier et du nombre de machines.
+
+ -> Conception de la nouvelle architecture hidoop v1 afin d'implémenter de la redondance au niveau de hdfs, une gestion des pannes, un moniteur d'utilisation des ressources et une répartition des tâches de façon équitable sur Hidoop.
+
+
+À faire :
+
+ Hdfs : Gérer la redondance (plusieurs copies d'un même chunk sur plusieurs dataNodes)
+
+ Hdfs : Gérer les pannes de dataNode, et même de nameNode avec un nameNode secondaire de backup.
+
+ Hidoop : Gestion des ressources, implémenter un moniteur pouvant voir l'utilisation de chaque dataNode (% CPU, ressource mémoires ...) + permettre de partager le calcul de façon plus équitable
+
+ Hidoop : Gestion des pannes de dataNodes en plein calcul
+
+ Hidoop : Implémentation multiple reducers + trouver cas d'utilisation où ça permettrait plus de performances.
