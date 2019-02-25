@@ -1,0 +1,24 @@
+Pour 5 DataNodes:
+-Fichier de 63.8Mo -> 12.7Mo par chunk, 3 063ms pour Write(hdfs), 4 156ms 
+pour MapReduce
+-Fichier de 1Go -> 200Mo par chunk, 43 437ms pour Write(hdfs), 28 157ms 
+pour MapReduce
+-Fichier de 2.4Go -> 480Mo par chunk, Write ne fini pas
+-Fichier de 10Go -> 2Go par chunk, Java Out Of Memory Error
+
+Il faut prendre en compte que Write envoi les données nous seulement au
+DataNode qui doit stocker le chunk mais aussi au DataNode qui sert de 
+Backup, il y  a donc 2 fois plus de données à transmettre.
+
+Il n'est pas possible d'améliorer la rapidité de Write car nous sommes 
+limités par le réseau (transfert des données d'un poste à un autre) et 
+par les lectures/écritures sur le disque que la machine qui possède le 
+fichier initial doit faire.
+Cependant pour éviter les problèmes de mémoire il est possible de limiter
+la quantité d'information envoyée en une seule fois (en un seul chunk)
+en limitant la taille de chunks à 200Mo par exemple (car nous avons vu 
+que des chunks de 200Mo se transportent sans problème).
+
+Les performances sont correctes pour des fichiers de grande taille (1Go)
+et bien qu'il ne soit pas encore possible de traiter des fichiers beaucoup
+plus gros ce le seras bientot.
