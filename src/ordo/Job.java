@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.util.Hashtable;
 
-import config.Project;
 import exceptions.ErreurJobException;
 import formats.Format;
 import formats.KVFormat;
@@ -32,7 +31,7 @@ public class Job implements JobInterface{
 	}
 	@Override
 	public void setInputFname(String fname) {
-		this.inputfname = Project.PATH+"data/"+fname;
+		this.inputfname = "/tmp/"+fname;
 	}
 
 	public String getOutputfname() {

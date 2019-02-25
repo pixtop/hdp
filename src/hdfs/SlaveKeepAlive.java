@@ -6,6 +6,7 @@ import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Map.Entry;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +83,22 @@ public class SlaveKeepAlive extends Thread{
 			for (Inet4Address inet4Address : slave.getDataNodes()) {
 				// Un des dataNode n'a pas repondu -> On le supprime
 				slave.getMaster().removeDataNode(inet4Address);
+
+				// On passe au backup pour tous les fichiers associés à ce dataNode
+				String[] fnames = slave.getMaster().getAllFileNames();
+				for (String fname: fnames){
+					InfoFichier infoF = slave.getMaster().getInfoFichier(fname);
+					if (infoF.getChunks().contains(inet4Address)){
+						for (Entry<Integer, Inet4Address> add :infoF.getChunks().entrySet()){
+							if (add.getValue().equals(inet4Address)){
+								infoF.switchToBackup(add.getKey());
+								System.out.println("Chunk "+add.getKey()+" of file "+fname+" moved to backup on "+add.getValue());
+							}
+						}
+
+					}
+				}
+
 				System.out.println("\033[31mDataNode " + inet4Address.toString() + " down, removed from dataNodes list\033[0m");
 			}
 			// On remet dataNodes a 0 et on recommence

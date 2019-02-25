@@ -112,7 +112,7 @@ public class HdfsClient {
         System.out.println("Taille fichier : " + reader.getSize() + " octets");
         System.out.println("Nombre dataNodes : " + data_nodes.size());
         System.out.println("Taille min chunks : " + taille_chunk_min);
-        System.out.println("Taille min chunks selectionnée : " + taille_chunk);
+        System.out.println("Taille chunks selectionnée : " + taille_chunk);
 
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
@@ -131,10 +131,19 @@ public class HdfsClient {
             if (chk.length() > 0) {
                 query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, remoteHdfsName, (int)index, chk.toString()); // À faire : faire du param index un long
                 Inet4Address data_node = (Inet4Address) data_nodes.get(i);
+                Inet4Address backup_node;
+                if (i==data_nodes.size()-1) {
+                    backup_node = (Inet4Address) data_nodes.get(0);
+                } else {
+                    backup_node = (Inet4Address) data_nodes.get(i+1);
+                }
 
                 // Envoi chunk
                 HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite)
                 newFile.addChunk((int)index, data_node);
+
+                HdfsClient.request(backup_node, query); // Récupération ACK (à utiliser par la suite)
+                newFile.addBackup((int)index, backup_node);
                 i ++;
             } else break;
         }
