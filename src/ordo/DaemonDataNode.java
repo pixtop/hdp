@@ -11,9 +11,10 @@ import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
-public class DaemonDataNode implements Daemon {
+public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
 
     private class Task {
         private final MapReduce mr;
@@ -30,7 +31,7 @@ public class DaemonDataNode implements Daemon {
 
     private final ArrayList<Task> mapQ;
 
-    private DaemonDataNode() {
+    private DaemonDataNode() throws RemoteException {
         mapQ = new ArrayList<>();
     }
 
@@ -70,6 +71,7 @@ public class DaemonDataNode implements Daemon {
             }
             task.r.close();
             task.w.close();
+            task.cb.mapDone();
             System.out.println("Map ended");
         }
     }
