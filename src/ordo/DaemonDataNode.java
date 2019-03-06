@@ -17,9 +17,9 @@ import java.util.ArrayList;
 public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
 
     private class Task {
-        private final MapReduce mr;
-        private final Format r, w;
-        private final CallBack cb;
+        private MapReduce mr;
+        private Format r, w;
+        private CallBack cb;
 
         private Task(MapReduce mr, Format r, Format w, CallBack cb) {
             this.mr = mr;
@@ -36,7 +36,7 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
     }
 
     @Override
-    public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) throws IOException {
+    public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) {
         synchronized (mapQ) {
             mapQ.add(new Task(m, reader, writer, cb));
             mapQ.notify();
@@ -53,6 +53,7 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
             synchronized (mapQ) {
                 if (mapQ.isEmpty()) {
                     try {
+                        System.out.println("Waiting task..");
                         mapQ.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -71,7 +72,12 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
             }
             task.r.close();
             task.w.close();
-            task.cb.mapDone();
+            try {
+                task.cb.mapDone();
+            } catch (RemoteException e) {
+                // Connexion error between DaemonDataNode and DaemonMonitor
+                e.printStackTrace();
+            }
             System.out.println("Map ended");
         }
     }
@@ -81,9 +87,11 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
             LocateRegistry.createRegistry(Project.RMI_PORT);
             DaemonDataNode daemon = new DaemonDataNode();
             Naming.rebind("//"+ InetAddress.getLocalHost().getHostAddress()+":"+Project.RMI_PORT+"/"+Project.RMI_DAEMON, daemon);
+            System.out.println("Daemon bound in registry.");
             daemon.run();
         } catch (RemoteException e) {
             System.out.println("Port is already used.");
+            e.printStackTrace();
             System.exit(1);
         } catch (UnknownHostException | MalformedURLException e) {
             System.out.println("Unknown host error.");
