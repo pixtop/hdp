@@ -5,6 +5,8 @@ import formats.Format;
 import map.MapReduce;
 
 import java.io.IOException;
+import java.io.File;
+import java.nio.file.NotDirectoryException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -14,6 +16,13 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
+
+/**
+ * DaemonDataNode, exécute les maps sur les fichiers du dataNode
+ * Lancement : java DaemonDataNode [dossier_root(celui du dataNode)]
+ * Port par défaut : voir dans config.Projet
+ * Utiliser HidoopServer plutôt pour le lancer
+*/
 public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
 
     private class Task {
@@ -31,12 +40,24 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
 
     private final ArrayList<Task> mapQ;
 
-    private DaemonDataNode() throws RemoteException {
+    private File dir; // Dossier dans lequel créer les résultats des maps (même que celui du dataNode, obligatoire)
+
+    public DaemonDataNode(String dir) throws RemoteException, NotDirectoryException {
+        this.dir = new File(dir);
+
+        if (!this.dir.exists() || !this.dir.isDirectory()) {
+            throw new NotDirectoryException("Repertory " + dir + " does not exist");
+        }
+
         mapQ = new ArrayList<>();
     }
 
     @Override
     public void runMap(MapReduce m, Format reader, Format writer, CallBack cb) {
+        // Changer pour le bon répertoire de travail
+        reader.setFname(this.dir.getPath() + "/" + reader.getFname());
+        writer.setFname(this.dir.getPath() + "/" + writer.getFname());
+        // Ajouter une tâche
         synchronized (mapQ) {
             mapQ.add(new Task(m, reader, writer, cb));
             mapQ.notify();
@@ -47,7 +68,7 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
      * Run map task while there is one task in the queue.
      * Wait if no task left.
      */
-    private void run() {
+    public void run() {
         Task task;
         while (true) {
             synchronized (mapQ) {
@@ -82,20 +103,28 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
         }
     }
 
-    static public void main (String[] args) {
+    static public void main(String[] args) {
+
         try {
-            LocateRegistry.createRegistry(Project.RMI_PORT);
-            DaemonDataNode daemon = new DaemonDataNode();
-            Naming.rebind("//"+ InetAddress.getLocalHost().getHostAddress()+":"+Project.RMI_PORT+"/"+Project.RMI_DAEMON, daemon);
-            System.out.println("Daemon bound in registry.");
-            daemon.run();
+          DaemonDataNode daemon = null;
+          if(args.length > 1) {
+            daemon = new DaemonDataNode(args[0]);
+          }
+          else daemon = new DaemonDataNode(".");
+
+          LocateRegistry.createRegistry(Project.RMI_PORT);
+          Naming.rebind("//"+ InetAddress.getLocalHost().getHostAddress()+":"+Project.RMI_PORT+"/"+Project.RMI_DAEMON, daemon);
+          System.out.println("Daemon launched successfully");
+          daemon.run();
         } catch (RemoteException e) {
-            System.out.println("Port is already used.");
-            e.printStackTrace();
-            System.exit(1);
+          System.err.println("Port " + Project.RMI_PORT + " already used");
+          System.exit(1);
         } catch (UnknownHostException | MalformedURLException e) {
-            System.out.println("Unknown host error.");
-            System.exit(1);
+          System.err.println("Unknown host error (should not happen)");
+          System.exit(1);
+        } catch (NotDirectoryException e) {
+          System.err.println("Directory " + args[0] + " does not exist");
+          System.exit(1);
         }
     }
 }
