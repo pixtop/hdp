@@ -11,6 +11,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
+import java.io.File;
 
 /** Classe client Hidoop
 * Lancer la commande sans args pour voir son usage
@@ -45,6 +46,7 @@ public class HidoopClient {
     mr.reduce(r, w);
     r.close();
     w.close();
+    (new File(hdfs_result)).delete();
   }
 
   public static void main(String[] args) {
