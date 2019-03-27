@@ -18,9 +18,9 @@ public class HidoopServer {
   private static DaemonMonitor moniteur; // DaemonMonitor
 
   public static void usage() {
-    System.out.println("Usage: java HidoopServer [-m] [-r <root_directory>] [-h <nameNode_host>]");
+    System.out.println("Usage: java HidoopServer [root_directory] [-m] [-h <nameNode_host>]");
+    System.out.println("root_directory : Répertoire où le dataNode range ses chunks, utilisé par le DaemonDataNode");
     System.out.println("-m : En plus du DaemonDataNode, lancer aussi un DaemonMonitor");
-    System.out.println("-r <host> : Répertoire où le dataNode range ses chunks, utilisé par le DaemonDataNode");
     System.out.println("-h <nameNode_host> : Adresse du nameNode, utilisée par le DaemonMonitor");
   }
 
@@ -38,15 +38,11 @@ public class HidoopServer {
             System.exit(0);
           }
           break;
-        case "-r":
-          root = args[++i];
-          break;
         case "-m":
           launch_monitor = true;
           break;
         default:
-          HidoopServer.usage();
-          System.exit(0);
+          root = args[i];
       }
     }
     try {
