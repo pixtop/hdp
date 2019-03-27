@@ -1,17 +1,11 @@
-all : server client daemon interface console
+all : server client
 
-clean : 
+clean :
 	rm */*.class
 
-server : HdfsServer.class
+server : HdfsServer.class HidoopServer.class
 
-client : HdfsClient.class
-
-daemon : Daemon_dataNode.class
-
-interface : InterfaceMapReduce.class
-
-console : Hidoop_lancement.class
+client : HdfsClient.class HidoopClient.class
 
 HdfsClient.class :
 	javac hdfs/HdfsClient.java
@@ -19,11 +13,8 @@ HdfsClient.class :
 HdfsServer.class :
 	javac hdfs/HdfsServer.java
 
-Daemon_dataNode.class :
-	javac ordo/Daemon_dataNode.java
+HidoopServer.class :
+	javac ordo/HidoopServer.java
 
-InterfaceMapReduce.class :
-	 javac ordo/InterfaceMapReduce.java
-
-Hidoop_lancement.class :
-	javac ordo/Hidoop_lancement.java
+HidoopClient.class :
+	javac ordo/HidoopClient.java
