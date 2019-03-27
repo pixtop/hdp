@@ -27,10 +27,10 @@ public class DaemonMonitor extends UnicastRemoteObject implements RessourceManag
     private final Collection<JobInterface> jobQ;
 
     public DaemonMonitor(String nameNode) throws RemoteException, UnknownHostException {
-        InetAddress.getByName(nameNode); // Vérifier que l'host existe
 
         this.jobQ = new ArrayList<>();
-        HdfsClient.nameNode = nameNode;
+        HdfsClient.nameNode = InetAddress.getByName(nameNode).getHostName(); // Vérifier que l'host existe
+        System.out.println("NameNode host : " + HdfsClient.nameNode);
     }
 
     @Override
