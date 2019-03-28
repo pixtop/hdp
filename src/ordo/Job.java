@@ -53,7 +53,7 @@ public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 		// Look for information on the file in hdfs
 		InfoFichier info = null;
 		try {
-			info = HdfsClient.HdfsList(this.fname); // TODO address nameNode
+			info = HdfsClient.HdfsList(this.fname);
 		} catch (Exception e) {
 			throw new ErreurJobException(e.getMessage());
 		}
