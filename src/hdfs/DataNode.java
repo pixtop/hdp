@@ -89,10 +89,10 @@ public class DataNode {
      */
     String getChunk(String fname, int chunk) throws IOException {
 	    String name = this.makeName(fname, chunk);
-        File[] files = this.getFiles();
+      File[] files = this.getFiles();
 	    for (File f : files) {
 	        if (f.isFile() && f.getName().equals(name) ) {
-	            return this.readFile(f.getPath());
+	            return f.getPath();
             }
         }
 	    throw new FileNotFoundException();
@@ -126,7 +126,7 @@ public class DataNode {
      * @throws IOException exception if writing is impossible
      */
     void addChunk(String fname, int chunk, String content) throws IOException {
-        FileWriter file = new FileWriter(this.dir.getPath() + "/" + makeName(fname, chunk));
+        FileWriter file = new FileWriter(this.dir.getPath() + "/" + makeName(fname, chunk),false);
         file.write(content);
         file.close();
     }
