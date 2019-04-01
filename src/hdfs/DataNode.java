@@ -126,7 +126,7 @@ public class DataNode {
      * @throws IOException exception if writing is impossible
      */
     void addChunk(String fname, int chunk, String content) throws IOException {
-        FileWriter file = new FileWriter(this.dir.getPath() + "/" + makeName(fname, chunk));
+        FileWriter file = new FileWriter(this.dir.getPath() + "/" + makeName(fname, chunk),false);
         file.write(content);
         file.close();
     }
