@@ -15,6 +15,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.lang.System;
 
 
 /**
@@ -41,6 +42,17 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
     private final ArrayList<Task> mapQ;
 
     private File dir; // Dossier dans lequel créer les résultats des maps (même que celui du dataNode, obligatoire)
+
+    public static int getIndex(String fileName) {
+      String index = "";
+      int i = fileName.length() - 1;
+      char c = fileName.charAt(i);
+      while(c >= '0' && c <= '9') {
+        index = c + index;
+        c = fileName.charAt(--i);
+      }
+      return Integer.parseInt(index);
+    }
 
     public DaemonDataNode(String dir) throws RemoteException, NotDirectoryException {
         this.dir = new File(dir);
@@ -84,6 +96,7 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
                 mapQ.remove(0);
             }
             System.out.println("Map in progress");
+            long ctime = System.currentTimeMillis();
             try {
                 task.r.open(Format.OpenMode.R);
                 task.w.open(Format.OpenMode.W);
@@ -93,8 +106,9 @@ public class DaemonDataNode extends UnicastRemoteObject implements Daemon {
             }
             task.r.close();
             task.w.close();
+            ctime = System.currentTimeMillis() - ctime;
             try {
-                task.cb.mapDone();
+                task.cb.mapDone(DaemonDataNode.getIndex(task.r.getFname()), (double)ctime / 1000F);
             } catch (RemoteException e) {
                 // Connexion error between DaemonDataNode and DaemonMonitor
                 e.printStackTrace();

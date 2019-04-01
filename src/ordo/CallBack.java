@@ -5,5 +5,5 @@ import java.rmi.RemoteException;
 
 interface CallBack extends Remote {
 
-    void mapDone() throws RemoteException;
+    void mapDone(Integer chunk, Double tps) throws RemoteException;
 }

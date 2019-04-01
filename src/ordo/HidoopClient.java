@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.io.File;
+import java.lang.System;
 
 /** Classe client Hidoop
 * Lancer la commande sans args pour voir son usage
@@ -25,28 +26,36 @@ public class HidoopClient {
   * @param input_name Nom du fichier hdfs sur lequel le lancer
   * @param output_name nom du fichier local où enregistrer le résultat
   * @throws Exception si quoi que ce soit se passe mal
+  * @return InfoJob info exécution du job
   */
-  public static void doJob(MapReduce mr, String input_name, String output_name) throws Exception {
+  public static InfoJob doJob(MapReduce mr, String input_name, String output_name) throws Exception {
+    long totalTime = System.currentTimeMillis();
     RessourceManager monitor = (RessourceManager) Naming.lookup("//" + HidoopClient.monitor.getHostAddress() + ':' + Project.RMI_PORT + '/' + Project.RMI_MONITOR);
     // Demande au moniteur de faire le map
-    String hdfs_result = monitor.doJob(mr, input_name);
+    InfoJob hdfs_result = monitor.doJob(mr, input_name);
     // récupérer le fichier résultat en local
     String nameNode = monitor.getNameNode();
     if(nameNode.equals("localhost"))HdfsClient.nameNode = HidoopClient.monitor.getHostAddress(); // TODO : améliorer cette technique pt
     else HdfsClient.nameNode = nameNode;
-    HdfsClient.HdfsRead(hdfs_result, hdfs_result);
+    HdfsClient.HdfsRead(hdfs_result.fname, hdfs_result.fname);
     // Supprimer les fichiers tmp du hdfs
-    HdfsClient.HdfsDelete(hdfs_result);
+    HdfsClient.HdfsDelete(hdfs_result.fname);
     // Faire le reduce en local
     Format r = new KVFormat(), w = new KVFormat();
-    r.setFname(hdfs_result);
+    r.setFname(hdfs_result.fname);
     w.setFname(output_name);
+    long reduceTime = System.currentTimeMillis();
     r.open(Format.OpenMode.R);
     w.open(Format.OpenMode.W);
     mr.reduce(r, w);
     r.close();
     w.close();
-    (new File(hdfs_result)).delete();
+    reduceTime = System.currentTimeMillis() - reduceTime;
+    (new File(hdfs_result.fname)).delete();
+    totalTime = System.currentTimeMillis() - totalTime;
+    hdfs_result.reduceTime = (double)reduceTime / 1000F;
+    hdfs_result.totalTime = (double)totalTime / 1000F;
+    return hdfs_result;
   }
 
   public static void main(String[] args) {
@@ -77,7 +86,14 @@ public class HidoopClient {
     if(output == null)output = fname + "-res";
     if(fname != null) {
       try {
-        HidoopClient.doJob(new MyMapReduce(), fname, output);
+        InfoJob info = HidoopClient.doJob(new MyMapReduce(), fname, output);
+        System.out.println("MapReduce sur " + info.fname + " 1 seul Reduce, " + info.mapTimes.size() + " dataNodes");
+        System.out.println("Temps total d'exécution : " + info.totalTime + " sec");
+        System.out.println("Temps total des maps en parallèle : " + info.totalMapTime + " sec");
+        for(Integer i : info.mapTimes.keySet()) {
+          System.out.println("Temps Map sur chunk d'index " + i + " : " + info.mapTimes.get(i) + " sec");
+        }
+        System.out.println("Temps d'exécution du Reduce en local : " + info.reduceTime + " sec");
       } catch(Exception e) {
         System.err.println(e.getMessage());
       }

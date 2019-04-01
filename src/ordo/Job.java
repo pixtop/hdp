@@ -22,6 +22,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.lang.System;
 
 public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 
@@ -35,11 +36,14 @@ public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 	private int chunkMapped;
 
 	// fichier résultat des maps sur le dhfs (à reduce ensuite)
-	// doit être accédé par le Moniteur
-	public InfoFichier result = null;
+	private InfoFichier result = null;
+
+	// résultat pour le moniteur
+	public InfoJob analyse;
 
 	Job(Collection<JobInterface> jobQ) throws RemoteException {
 		this.jobQ = jobQ;
+		this.analyse = new InfoJob();
 	}
 
 	@Override
@@ -71,9 +75,11 @@ public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 
 		// Fichier résultat crée sur le hdfs
 		this.result = new InfoFichier(this.fname+".map", Format.Type.KV);
+		this.analyse.fname = this.fname+".map";
 
 		Hashtable<Integer,Inet4Address> dataNodes = info.getChunks();
 		this.chunkMapped = dataNodes.size();
+		this.analyse.totalMapTime = (double)System.currentTimeMillis() / 1000F;
 		// Start map on DaemonDataNodes
 		for (Integer i : dataNodes.keySet()) {
 			Inet4Address address = dataNodes.get(i);
@@ -103,8 +109,10 @@ public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 	}
 
 	@Override
-	public synchronized void mapDone() {
+	public synchronized void mapDone(Integer chunk, Double tps)  {
+		this.analyse.mapTimes.put(chunk, tps); // Analyse de perf
 		if (--this.chunkMapped == 0) {
+			this.analyse.totalMapTime = ((double)System.currentTimeMillis() / 1000F) - this.analyse.totalMapTime;
 			System.out.println("Map done.");
 			// Ajouter fichier résultat sur le nameNode
 			HdfsQuery query = new HdfsQuery(HdfsQuery.Command.WRT_FILE, this.result);

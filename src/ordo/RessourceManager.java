@@ -13,9 +13,9 @@ public interface RessourceManager extends Remote {
     /** Réaliser un mapReduce sur un fichier du hdfs
     @param mr Le mapReduce à exécuter
     @param fname Nom du fichier hdfs sur lequel l'exécuter
-    @return String nom du fichier résultat des map, à recupérer par hdfs en local pour faire le reduce
+    @return InfoJob info sur le job
     */
-    public String doJob(MapReduce mr, String fname) throws RemoteException, ErreurJobException;
+    public InfoJob doJob(MapReduce mr, String fname) throws RemoteException, ErreurJobException;
 
     /** Récupérer l'adresse du nameNode
     @return String adresse du nameNode

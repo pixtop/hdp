@@ -33,7 +33,7 @@ public class DaemonMonitor extends UnicastRemoteObject implements RessourceManag
     }
 
     @Override
-    public String doJob(MapReduce mr, String fname) throws RemoteException, ErreurJobException {
+    public InfoJob doJob(MapReduce mr, String fname) throws RemoteException, ErreurJobException {
         Job job = new Job(this.jobQ);
         job.setInputFname(fname);
         synchronized (jobQ) {
@@ -50,7 +50,7 @@ public class DaemonMonitor extends UnicastRemoteObject implements RessourceManag
             jobQ.remove(job);
         }
 
-        return job.result.getNom(); // Nom fichier résultat du hdfs à reduce en local
+        return job.analyse; // Nom fichier résultat du hdfs à reduce en local + info sur le job
     }
 
     @Override
