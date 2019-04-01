@@ -122,27 +122,28 @@ public class HdfsClient {
 
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
-        int TAILLE_MAX = 100000;
+        int TAILLE_MAX = 100000000;
 
         for(int i=0;i<data_nodes.size();i++) {
         	System.out.println(i);
             long index = reader.getIndex();
             // Création du chunk par lecture du fichier
 
-             for(long ki = 1; ki<= (taille_chunk/ TAILLE_MAX + ((taille_chunk % TAILLE_MAX== 0) ? 0 : 1)) ; ki++) {
+             for(int ki = 1; ki<= (taille_chunk/ TAILLE_MAX + ((taille_chunk % TAILLE_MAX== 0) ? 0 : 1)) ; ki++) {
+            	 System.out.println("ki:"+ki);
+
 	            	long k = ki*TAILLE_MAX;
 	            	StringBuilder chk = new StringBuilder();
-	            	System.out.println("Debut:"+reader.getIndex());
-	            	for (long j = reader.getIndex(); j < Long.min(index + taille_chunk,index+k); j = reader.getIndex()) {
+	            	long valmin = Long.min(index + taille_chunk,index+k);
+	            	for (long j = reader.getIndex(); Long.compare(j,valmin)<0; j = reader.getIndex()) {
 		                KV rd = reader.read();
 		                if (rd == null) break;
 		                if (fmt == Format.Type.LINE) chk.append(rd.v);
 		                else chk.append(rd.k).append(KV.SEPARATOR).append(rd.v);
 		                chk.append("\n");
 		            }
-	            	System.out.println("Fin:"+reader.getIndex());
 	            if (chk.length() > 0) {
-	            	if (ki==1){
+	            	if (ki == 1){
 			                query = new HdfsQuery(HdfsQuery.Command.WRT_CHUNK, remoteHdfsName, (int)index, chk.toString()); // À faire : faire du param index un long
 			                Inet4Address data_node = (Inet4Address) data_nodes.get(i);
 			                Inet4Address backup_node;
@@ -154,9 +155,11 @@ public class HdfsClient {
 			                // Envoi chunk
 			                HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite)
 			                newFile.addChunk((int)index, data_node);
-			                HdfsClient.request(backup_node, query); // Récupération ACK (à utiliser par la suite)
-			                newFile.addBackup((int)index, backup_node);
+			            //    HdfsClient.request(backup_node, query); // Récupération ACK (à utiliser par la suite)
+			            //   System.out.println("QueryCtrl3");
+			            //    newFile.addBackup((int)index, backup_node);
 		            } else {
+
 			            	query = new HdfsQuery(HdfsQuery.Command.EXT_CHUNK, remoteHdfsName, (int)index, chk.toString()); // À faire : faire du param index un long
 			                Inet4Address data_node = (Inet4Address) data_nodes.get(i);
 			                Inet4Address backup_node;
@@ -166,15 +169,17 @@ public class HdfsClient {
 			                    backup_node = (Inet4Address) data_nodes.get(i+1);
 			                }
 			                // Envoi chunk
-			                HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite)
-			                HdfsClient.request(backup_node, query); // Récupération ACK (à utiliser par la suite)
+			                HdfsClient.request(data_node, query); // Récupération ACK (à utiliser par la suite
+			            //    HdfsClient.request(backup_node, query); // Récupération ACK (à utiliser par la suite)
+			            //    System.out.println("QueryCtrl3");
 		            }
+	            } else {
+	            	break;
 	            }
             }
 
 
         }
-
         // Fermeture fichier
         reader.close();
 
