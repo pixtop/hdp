@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -101,8 +103,30 @@ public class HdfsServer {
                 System.out.println(" |-> Request chunk of index " + query.getChunk() + " of file " + query.getName());
                 try {
                   String fname = HdfsServer.data.getChunk(query.getName(), query.getChunk());
-                  // Envoyer sequentiellement
+                  int TAILLE_MAX_ENVOI = 10000; // 10 Mo
+                  FileReader input = new FileReader(fname);
+                  BufferedReader br = new BufferedReader(input);
+                  boolean continuer = true;
+                  while(continuer) {
+                    int size = 0;
+                    StringBuilder morceau = new StringBuilder();
+                    while(size < TAILLE_MAX_ENVOI) {
+                      String line = br.readLine();
+                      if(line != null) {
+                        morceau.append(line);
+                        size += line.getBytes().length;
+                      } else {
+                        continuer = false;
+                        break;
+                      }
+                    }
+                    if(size > 0) {
+                      oos.writeObject(new HdfsResponse(morceau.toString(), null));
+                      // System.out.println("    | -> A piece of " + size + " octets sent");
+                    }
+                  }
                   oos.writeObject(new HdfsResponse(null, null));
+                  // System.out.println("    | -> END sent");
                 } catch (FileNotFoundException e) {
                   System.err.println(" |-> Error : Chunk not found");
                   oos.writeObject(new HdfsResponse(null, e));

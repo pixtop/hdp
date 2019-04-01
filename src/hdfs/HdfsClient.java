@@ -193,26 +193,40 @@ public class HdfsClient {
         if (localFSDestFname == null) localFSDestFname = hdfsFname;
 
         InfoFichier f = HdfsClient.HdfsList(hdfsFname);
+        Hashtable<Integer,Inet4Address> data_nodes = f.getChunks(); // Récupération chunks
 
-        Hashtable<Integer,Inet4Address> data_nodes = f.getChunks();
-
-        // Récupération chunks
-        StringBuilder content = new StringBuilder();
         List<Integer> indexs = new LinkedList<Integer>();
         for (Integer i : data_nodes.keySet()) indexs.add(i);
-        Collections.sort(indexs);
+        Collections.sort(indexs); // Ordonner dataNodes
+
+        FileWriter file = new FileWriter(localFSDestFname); // Écriture du fichier
+
         for (Integer i : indexs) {
             Inet4Address addr = data_nodes.get(i);
 
-            // Demande d'un chunk
+            Socket s = new Socket(addr, HdfsServer.port);
+            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+
+            // Envoie une requête au Node
             HdfsQuery query = new HdfsQuery(HdfsQuery.Command.GET_CHUNK, hdfsFname, i, null);
-            HdfsResponse response = HdfsClient.request(addr, query);
+            oos.writeObject(query);
 
-            content.append((String)response.getResponse());
+            HdfsResponse response = (HdfsResponse) ois.readObject();
+            if (response.getError() != null) throw response.getError();
+
+            // Demande d'un chunk
+            while(response.getResponse() != null) {
+              String piece = (String)response.getResponse();
+              // System.out.println("Received piece of " + piece.getBytes().length);
+              file.write(piece);
+              response = (HdfsResponse) ois.readObject();
+            }
+            // System.out.println("END received");
+            ois.close();
+            oos.close();
+            s.close();
         }
-
-        FileWriter file = new FileWriter(localFSDestFname);
-        file.write(content.toString());
         file.close();
     }
 

@@ -92,7 +92,7 @@ public class DataNode {
       File[] files = this.getFiles();
 	    for (File f : files) {
 	        if (f.isFile() && f.getName().equals(name) ) {
-	            return name;
+	            return f.getPath();
             }
         }
 	    throw new FileNotFoundException();
