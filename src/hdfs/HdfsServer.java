@@ -100,7 +100,9 @@ public class HdfsServer {
               if(query.getName() != null) {
                 System.out.println(" |-> Request chunk of index " + query.getChunk() + " of file " + query.getName());
                 try {
-                  oos.writeObject(new HdfsResponse(HdfsServer.data.getChunk(query.getName(), query.getChunk()), null));
+                  String fname = HdfsServer.data.getChunk(query.getName(), query.getChunk());
+                  // Envoyer sequentiellement
+                  oos.writeObject(new HdfsResponse(null, null));
                 } catch (FileNotFoundException e) {
                   System.err.println(" |-> Error : Chunk not found");
                   oos.writeObject(new HdfsResponse(null, e));
