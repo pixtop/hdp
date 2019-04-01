@@ -1,6 +1,7 @@
 package formats;
 
 import java.io.Serializable;
+
 import hdfs.InfoFichier;
 
 public class HdfsQuery implements Serializable {
@@ -12,6 +13,7 @@ public class HdfsQuery implements Serializable {
                         GET_DATANODES, // Récupération liste data nodes sur le NameNode
                         WRT_FILE, // Écriture sur le NameNode
                         WRT_CHUNK, // Écriture sur un DataNode
+                        EXT_CHUNK, // Permet de rendre un chunk plus long, en concatenant à la fin
                         DEL_CHUNK, // Suppression chunk sur DataNode
                         DEL_FILE // Suppresion file sur NameNode
                         }

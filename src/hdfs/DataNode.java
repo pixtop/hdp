@@ -132,6 +132,18 @@ public class DataNode {
     }
 
     /**
+     * @param fname filename
+     * @param chunk chunk number
+     * @param content content of the file
+     * @throws IOException exception if writing is impossible
+     */
+    void extChunk(String fname, int chunk, String content) throws IOException {
+        FileWriter file = new FileWriter(this.dir.getPath() + "/" + makeName(fname, chunk),true);
+        file.write(content);
+        file.close();
+    }
+
+    /**
      * @return array of file names stored
      */
     String[] showChunks() {
