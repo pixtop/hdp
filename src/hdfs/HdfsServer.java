@@ -135,6 +135,16 @@ public class HdfsServer {
                 oos.writeObject(new HdfsResponse(null, new NotANameNode("Not a NameNode")));
               }
               break;
+            case EXT_CHUNK:
+            	System.out.println(" |-> Extending chunk of file " + query.getName() + ", index : " + query.getChunk());
+                try {
+                  HdfsServer.data.extChunk(query.getName(), query.getChunk(), (String)query.getData());
+                  oos.writeObject(new HdfsResponse(null, null));
+                } catch(IOException e) {
+                  System.err.println(" |-> Error : Could'nt extend chunk");
+                  oos.writeObject(new HdfsResponse(null, e));
+                }
+                break;
             case WRT_CHUNK:
               System.out.println(" |-> Adding chunk of file " + query.getName() + ", index : " + query.getChunk());
               try {
