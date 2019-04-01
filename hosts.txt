@@ -1,4 +1,7 @@
-pikachu
-piafabec
 gandalf
 shadowcat
+magma
+c201-06
+c201-08
+c201-09
+c201-10

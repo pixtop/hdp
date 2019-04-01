@@ -18,9 +18,10 @@ public class MapReducePi implements MapReduce {
 	@Override
 	public void map(FormatReader reader, FormatWriter writer) throws IOException   {
 		Random rd = new Random();
-
+System.out.println("test");
 		KV kv = reader.read();
-		int nb = Integer.parseInt(kv.v);
+		int	nb = Integer.parseInt(kv.v.trim());
+		System.out.println("Nombre de points: "+nb);
 		int Nb_in = 0;
 		int Nb_out = 0;
 

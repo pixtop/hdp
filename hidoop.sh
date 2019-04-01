@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-tmpdir=/tmp/hidoop_pvd
+tmpdir=/tmp/hidoop_pvd2
 jarpath=~/nosave/hidoop
 
 mkdir -p $tmpdir

@@ -24,7 +24,7 @@ import formats.LineFormat;
 public class HdfsClient {
 
     public static String nameNode = "localhost";
-    private static final int taille_chunk_min = 1000; // taille minimale en octet d'un chunk (si taille du fichier inf à ce min, pas de division)
+    private static final int taille_chunk_min = 1; // taille minimale en octet d'un chunk (si taille du fichier inf à ce min, pas de division)
 
     private static void usage() {
         System.out.println("Usage: java hdfs/HdfsClient [-h <nameNode/dataNode_host>] <command>");
