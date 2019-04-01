@@ -113,7 +113,7 @@ public class HdfsServer {
                     while(size < TAILLE_MAX_ENVOI) {
                       String line = br.readLine();
                       if(line != null) {
-                        morceau.append(line);
+                        morceau.append(line).append("\n");
                         size += line.getBytes().length;
                       } else {
                         continuer = false;

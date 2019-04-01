@@ -115,22 +115,22 @@ public class HdfsClient {
         long taille_chunk = reader.getSize() / data_nodes.size();
         taille_chunk = taille_chunk > taille_chunk_min ? taille_chunk : taille_chunk_min;
 
-        System.out.println("Taille fichier : " + reader.getSize() + " octets");
-        System.out.println("Nombre dataNodes : " + data_nodes.size());
-        //System.out.println("Taille min chunks : " + taille_chunk_min);
-        System.out.println("Taille chunks selectionnée : " + taille_chunk);
+        // System.out.println("Taille fichier : " + reader.getSize() + " octets");
+        // System.out.println("Nombre dataNodes : " + data_nodes.size());
+        // System.out.println("Taille min chunks : " + taille_chunk_min);
+        // System.out.println("Taille chunks selectionnée : " + taille_chunk);
 
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
         int TAILLE_MAX = 100000000;
 
         for(int i=0;i<data_nodes.size();i++) {
-        	System.out.println(i);
+        	// System.out.println(i);
             long index = reader.getIndex();
             // Création du chunk par lecture du fichier
 
              for(int ki = 1; ki<= (taille_chunk/ TAILLE_MAX + ((taille_chunk % TAILLE_MAX== 0) ? 0 : 1)) ; ki++) {
-            	 System.out.println("ki:"+ki);
+            	 // System.out.println("ki:"+ki);
 
 	            	long k = ki*TAILLE_MAX;
 	            	StringBuilder chk = new StringBuilder();
