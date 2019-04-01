@@ -129,7 +129,8 @@ public class HdfsClient {
             long index = reader.getIndex();
             // Création du chunk par lecture du fichier
 
-            for(long k = 1000000; k<index+taille_chunk; k=k+1000000) {
+             for(long ki = 1; ki<= (taille_chunk/ TAILLE_MAX + ((taille_chunk % TAILLE_MAX== 0) ? 0 : 1)) ; ki++) {
+	      	long k = ki*TAILLE_MAX;
 	            for (long j = index; j < Long.min(index + taille_chunk,k); j = reader.getIndex()) {
 	                KV rd = reader.read();
 	                if (rd == null) break;
