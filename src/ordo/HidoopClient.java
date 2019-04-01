@@ -6,6 +6,8 @@ import application.MyMapReduce;
 import hdfs.HdfsClient;
 import formats.Format;
 import formats.KVFormat;
+import application.MapReducePi;
+
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -58,8 +60,14 @@ public class HidoopClient {
     return hdfs_result;
   }
 
+  public static void usage() {
+    System.out.println("Usage: java HidoopClient <hdfs_file> [-o <local_result_file>] [-h <address_monitor>] [-a <applicatiion>]");
+    System.out.println("-a <application> : application = PI (calcul PI) ou WC (word count - par défaut)");
+  }
+
   public static void main(String[] args) {
     String fname = null, output = null;
+    MapReduce mr = new MyMapReduce();
     try {
       HidoopClient.monitor = InetAddress.getLocalHost();
     } catch(UnknownHostException e) {
@@ -79,6 +87,22 @@ public class HidoopClient {
             System.exit(1);
           }
           break;
+        case "-a":
+          if(++i < args.length) {
+            switch(args[i]) {
+              case "PI":
+                mr = new MapReducePi();
+                break;
+              case "WC":
+                break;
+              default:
+                System.out.println("Unknow application " + args[i] + " (possibilities : PI, MC)");
+                System.exit(1);
+            }
+          } else {
+            HidoopClient.usage();
+            System.exit(1);
+          }
         default:
           fname = args[i];
       }
@@ -86,7 +110,7 @@ public class HidoopClient {
     if(output == null)output = fname + "-res";
     if(fname != null) {
       try {
-        InfoJob info = HidoopClient.doJob(new MyMapReduce(), fname, output);
+        InfoJob info = HidoopClient.doJob(mr, fname, output);
         System.out.println("MapReduce sur " + info.fname + " 1 seul Reduce, " + info.mapTimes.size() + " dataNodes");
         System.out.println("Temps total d'exécution : " + info.totalTime + " sec");
         System.out.println("Temps total des maps en parallèle : " + info.totalMapTime + " sec");
@@ -97,7 +121,7 @@ public class HidoopClient {
       } catch(Exception e) {
         System.err.println(e.getMessage());
       }
-    } else System.out.println("Usage: java HidoopClient <hdfs_file> [-o <local_result_file>] [-h <address_monitor>]");
+    } else HidoopClient.usage();
   }
 
 }
