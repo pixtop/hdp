@@ -1,2 +1,0 @@
--> Toutes les modifications quand au travail non réalisé on été prises en compte lors de la finalisation du Hdfs.
--> La remarque quand à l'ajout manuel de dataNodes enregistrés au lancement du nameNode a été prise en compte
