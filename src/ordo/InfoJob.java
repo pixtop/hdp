@@ -11,6 +11,8 @@ public class InfoJob implements Serializable {
   public double totalTime; // Temps d'exécution du job
   public Map<Integer, Double> mapTimes; // Temps d'exécution de la map sur chaque chunk (par index)
 
+  public String fname;
+
   public InfoJob() {
     this.mapTimes = new HashMap<Integer, Double>();
   }
