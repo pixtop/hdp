@@ -14,7 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-class DataNode {
+public class DataNode {
 
     private class KeepAlive implements Runnable {
 
@@ -68,7 +68,8 @@ class DataNode {
         return new String(encoded);
     }
 
-    private String makeName(String prefix, int suffix) {
+    /** Create chunk name from file name(prefix) and index(suffix) */
+    public static String makeName(String prefix, int suffix) {
 	    return prefix + "." + suffix;
     }
 

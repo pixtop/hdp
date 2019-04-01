@@ -36,7 +36,13 @@ public class HdfsClient {
         System.out.println("\tchunks"); // Liste des fichiers dans le répertoire du dataNode
     }
 
-    private static HdfsResponse request(InetAddress host, HdfsQuery hq) throws Exception {
+    /** Send a request to the nameNode
+    @param host address of the nameNode
+    @param hq query to send
+    @return HdfsResponse response of the nameNode
+    @throws Exception if error in the query
+    */
+    public static HdfsResponse request(InetAddress host, HdfsQuery hq) throws Exception {
         // Ouverture socket avec un Node
         Socket s = new Socket(host, HdfsServer.port);
         ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
@@ -109,10 +115,10 @@ public class HdfsClient {
         long taille_chunk = reader.getSize() / data_nodes.size();
         taille_chunk = taille_chunk > taille_chunk_min ? taille_chunk : taille_chunk_min;
 
-        System.out.println("Taille fichier : " + reader.getSize() + " octets");
-        System.out.println("Nombre dataNodes : " + data_nodes.size());
-        System.out.println("Taille min chunks : " + taille_chunk_min);
-        System.out.println("Taille chunks selectionnée : " + taille_chunk);
+        //System.out.println("Taille fichier : " + reader.getSize() + " octets");
+        //System.out.println("Nombre dataNodes : " + data_nodes.size());
+        //System.out.println("Taille min chunks : " + taille_chunk_min);
+        //System.out.println("Taille chunks selectionnée : " + taille_chunk);
 
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);

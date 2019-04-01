@@ -1,8 +1,9 @@
 package ordo;
 
-import java.io.Serializable;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-public class CallBack implements Serializable {
+interface CallBack extends Remote {
 
-
+    void mapDone(Integer chunk, Double tps) throws RemoteException;
 }
