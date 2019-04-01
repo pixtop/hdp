@@ -123,6 +123,7 @@ public class HdfsClient {
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
         int i = 0;
+        int TAILLE_MAX = 1000000;
         loop1:
         for(;;) {
             StringBuilder chk = new StringBuilder();
