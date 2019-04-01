@@ -1,5 +1,5 @@
-all : server client daemon interface console
-
+all : server client daemon 
+	
 clean : 
 	rm */*.class
 
