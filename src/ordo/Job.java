@@ -34,7 +34,7 @@ public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 	// nombre de map restant (non fini)
 	private int chunkMapped;
 
-	// fichier résultat des maps sur le dhfs (à reduce ensuite)
+	// fichier résultat des maps sur le hdfs (à reduce ensuite)
 	// doit être accédé par le Moniteur
 	public InfoFichier result = null;
 
