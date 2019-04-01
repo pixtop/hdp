@@ -89,10 +89,10 @@ public class DataNode {
      */
     String getChunk(String fname, int chunk) throws IOException {
 	    String name = this.makeName(fname, chunk);
-        File[] files = this.getFiles();
+      File[] files = this.getFiles();
 	    for (File f : files) {
 	        if (f.isFile() && f.getName().equals(name) ) {
-	            return this.readFile(f.getPath());
+	            return name;
             }
         }
 	    throw new FileNotFoundException();
