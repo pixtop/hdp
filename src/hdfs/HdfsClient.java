@@ -122,6 +122,7 @@ public class HdfsClient {
 
         // Écriture des chunks
         InfoFichier newFile = new InfoFichier(remoteHdfsName, fmt);
+        newFile.setTaille(reader.getSize());
         int TAILLE_MAX = 100000000;
 
         for(int i=0;i<data_nodes.size();i++) {

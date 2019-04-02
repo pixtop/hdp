@@ -14,11 +14,14 @@ public class InfoFichier implements Serializable {
 	private String nom; // Nom du fichier
 	private Format.Type format; // format kv ou line
 
+	private long taille; // Taille du fichier en octets
+
 	public InfoFichier(String nom, Format.Type format) {
 		this.chunks = new Hashtable<Integer,Inet4Address>();
 		this.chunksBackup = new Hashtable<Integer,Inet4Address>();
 		this.nom = nom;
 		this.format = format;
+		this.taille = -1;
 	}
 
 	public void addChunk(int numero, Inet4Address addr) {
@@ -41,6 +44,14 @@ public class InfoFichier implements Serializable {
 
 	public Hashtable<Integer,Inet4Address> getChunks(){
 		return this.chunks;
+	}
+
+	public void setTaille(long taille) {
+		this.taille = taille;
+	}
+
+	public long getTaille() {
+		return this.taille;
 	}
 
 }

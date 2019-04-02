@@ -111,7 +111,8 @@ public class HidoopClient {
     if(fname != null) {
       try {
         InfoJob info = HidoopClient.doJob(mr, fname, output);
-        System.out.println("MapReduce sur " + info.fname + " 1 seul Reduce, " + info.mapTimes.size() + " dataNodes");
+        System.out.println("MapReduce sur " + fname + " 1 seul Reduce, " + info.mapTimes.size() + " dataNodes");
+        System.out.println("Taille du fichier : " + info.flength + " octets");
         System.out.println("Temps total d'exécution : " + info.totalTime + " sec");
         System.out.println("Temps total des maps en parallèle : " + info.totalMapTime + " sec");
         for(Integer i : info.mapTimes.keySet()) {
