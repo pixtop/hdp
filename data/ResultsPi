@@ -1,0 +1,75 @@
+﻿5 DataNodes 
+
+250000 points :
+
+Client -a PI Pi50000.txt
+157256/42744
+3.14512
+MapReduce sur Pi50000.txt.map 1 seul Reduce, 4 dataNodes
+Temps total d'exécution : 0.24 sec
+Temps total des maps en parallèle : 0.08800005912780762 sec
+Temps Map sur chunk d'index 0 : 0.006 sec
+Temps Map sur chunk d'index 45 : 0.004 sec
+Temps Map sur chunk d'index 30 : 0.013 sec
+Temps Map sur chunk d'index 15 : 0.009 sec
+Temps d'exécution du Reduce en local : 0.005 sec
+
+500000 points :
+
+Client -a PI Pi100000.txt
+314143/85857
+3.14143
+MapReduce sur Pi100000.txt.map 1 seul Reduce, 4 dataNodes
+Temps total d'exécution : 2.474 sec
+Temps total des maps en parallèle : 2.313000202178955 sec
+Temps Map sur chunk d'index 0 : 0.004 sec
+Temps Map sur chunk d'index 18 : 0.007 sec
+Temps Map sur chunk d'index 36 : 0.347 sec
+Temps Map sur chunk d'index 54 : 0.006 sec
+Temps d'exécution du Reduce en local : 0.006 sec
+
+1000000 points :
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7 Datanodes :
+
+~/2A/Prog_concurrente/Projet/hdp/src, Ligne 186 : java ordo/HidoopClient -a PI Pi50000.txt
+274945/75055
+3.1422286
+MapReduce sur Pi50000.txt.map 1 seul Reduce, 7 dataNodes
+Temps total d'exécution : 0.237 sec
+Temps total des maps en parallèle : 0.04900002479553223 sec
+Temps Map sur chunk d'index 0 : 0.003 sec
+Temps Map sur chunk d'index 50 : 0.009 sec
+Temps Map sur chunk d'index 100 : 0.008 sec
+Temps Map sur chunk d'index 150 : 0.003 sec
+Temps Map sur chunk d'index 200 : 0.003 sec
+Temps Map sur chunk d'index 250 : 0.007 sec
+Temps Map sur chunk d'index 300 : 0.005 sec
+Temps d'exécution du Reduce en local : 0.005 sec
+~/2A/Prog_concurrente/Projet/hdp/src, Ligne 187 : java ordo/HidoopClient -a PI Pi100000.txt
+549714/150286
+3.141223
+MapReduce sur Pi100000.txt.map 1 seul Reduce, 7 dataNodes
+Temps total d'exécution : 0.209 sec
+Temps total des maps en parallèle : 0.04999995231628418 sec
+Temps Map sur chunk d'index 0 : 0.003 sec
+Temps Map sur chunk d'index 162 : 0.005 sec
+Temps Map sur chunk d'index 324 : 0.008 sec
+Temps Map sur chunk d'index 54 : 0.012 sec
+Temps Map sur chunk d'index 216 : 0.005 sec
+Temps Map sur chunk d'index 108 : 0.006 sec
+Temps Map sur chunk d'index 270 : 0.008 sec
+Temps d'exécution du Reduce en local : 0.005 sec

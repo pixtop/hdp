@@ -1,0 +1,150 @@
+1 Reducer, 5 dataNodes :
+Application : MyMapReduce (wordCount)
+
+100Mo:
+MapReduce sur 100Mo.txt.map 1 seul Reduce, 5 dataNodes
+Temps total d'exécution : 1.088 sec
+Temps total des maps en parallèle : 0.5869998931884766 sec
+Temps Map sur chunk d'index 0 : 0.451 sec
+Temps Map sur chunk d'index 82802525 : 0.475 sec
+Temps Map sur chunk d'index 41401861 : 0.543 sec
+Temps Map sur chunk d'index 20701048 : 0.494 sec
+Temps Map sur chunk d'index 62102071 : 0.502 sec
+Temps d'exécution du Reduce en local : 0.126 sec
+
+500Mo:
+MapReduce sur 500Mo.txt.map 1 seul Reduce, 5 dataNodes
+Temps total d'exécution : 2.663 sec
+Temps total des maps en parallèle : 2.300999879837036 sec
+Temps Map sur chunk d'index 0 : 1.935 sec
+Temps Map sur chunk d'index 414005581 : 2.068 sec
+Temps Map sur chunk d'index 207002386 : 2.254 sec
+Temps Map sur chunk d'index 103501122 : 1.936 sec
+Temps Map sur chunk d'index 310503482 : 2.102 sec
+Temps d'exécution du Reduce en local : 0.129 sec
+
+1Go:
+MapReduce sur 1Go.txt.map 1 seul Reduce, 5 dataNodes
+Temps total d'exécution : 4.962 sec
+Temps total des maps en parallèle : 4.588000059127808 sec
+Temps Map sur chunk d'index 0 : 3.829 sec
+Temps Map sur chunk d'index 414005581 : 4.545 sec
+Temps Map sur chunk d'index 207001927 : 3.705 sec
+Temps Map sur chunk d'index 828009551 : 4.0 sec
+Temps Map sur chunk d'index 621007540 : 4.296 sec
+Temps d'exécution du Reduce en local : 0.131 sec
+
+5Go:
+MapReduce sur 5Go.txt.map 1 seul Reduce, 5 dataNodes
+Temps total d'exécution : 22.182 sec
+Temps total des maps en parallèle : 21.83300018310547 sec
+Temps Map sur chunk d'index 0 : 19.455 sec
+Temps Map sur chunk d'index 154927560 : 20.057 sec
+Temps Map sur chunk d'index 1035009817 : 19.094 sec
+Temps Map sur chunk d'index 2070019419 : 21.799 sec
+Temps Map sur chunk d'index 1189938224 : 21.728 sec
+Temps d'exécution du Reduce en local : 0.135 sec
+
+10Go:
+MapReduce sur 10Go.txt.map 1 seul Reduce, 5 dataNodes
+Temps total d'exécution : 45.008 sec
+Temps total des maps en parallèle : 44.53700017929077 sec
+Temps Map sur chunk d'index 0 : 38.802 sec
+Temps Map sur chunk d'index 154927560 : 44.525 sec
+Temps Map sur chunk d'index 2070019380 : 37.619 sec
+Temps Map sur chunk d'index 1915091934 : 41.893 sec
+Temps Map sur chunk d'index 309855990 : 40.586 sec
+Temps d'exécution du Reduce en local : 0.153 sec
+
+
+1 Reducer, 10 dataNodes :
+Application : MyMapReduce (wordCount)
+
+100Mo:
+MapReduce sur 100Mo.txt.map 1 seul Reduce, 10 dataNodes
+Temps total d'exécution : 1.078 sec
+Temps total des maps en parallèle : 0.5480000972747803 sec
+Temps Map sur chunk d'index 93154813 : 0.25 sec
+Temps Map sur chunk d'index 31051177 : 0.312 sec
+Temps Map sur chunk d'index 82803647 : 0.302 sec
+Temps Map sur chunk d'index 0 : 0.292 sec
+Temps Map sur chunk d'index 62102146 : 0.269 sec
+Temps Map sur chunk d'index 41401861 : 0.266 sec
+Temps Map sur chunk d'index 20701048 : 0.275 sec
+Temps Map sur chunk d'index 51752030 : 0.314 sec
+Temps Map sur chunk d'index 72453356 : 0.291 sec
+Temps Map sur chunk d'index 10350115 : 0.315 sec
+Temps d'exécution du Reduce en local : 0.167 sec
+
+500Mo:
+MapReduce sur 500Mo.txt.map 1 seul Reduce, 10 dataNodes
+Temps total d'exécution : 1.765 sec
+Temps total des maps en parallèle : 1.2630000114440918 sec
+Temps Map sur chunk d'index 0 : 1.021 sec
+Temps Map sur chunk d'index 207004212 : 1.009 sec
+Temps Map sur chunk d'index 362256340 : 1.048 sec
+Temps Map sur chunk d'index 51750592 : 0.987 sec
+Temps Map sur chunk d'index 310505654 : 0.982 sec
+Temps Map sur chunk d'index 103501122 : 0.99 sec
+Temps Map sur chunk d'index 465758783 : 0.912 sec
+Temps Map sur chunk d'index 155253549 : 1.15 sec
+Temps Map sur chunk d'index 414007299 : 1.137 sec
+Temps Map sur chunk d'index 258754786 : 1.151 sec
+Temps d'exécution du Reduce en local : 0.174 sec
+
+1Go:
+MapReduce sur 1Go.txt.map 1 seul Reduce, 10 dataNodes
+Temps total d'exécution : 2.772 sec
+Temps total des maps en parallèle : 2.2760000228881836 sec
+Temps Map sur chunk d'index 414005581 : 1.891 sec
+Temps Map sur chunk d'index 0 : 1.873 sec
+Temps Map sur chunk d'index 621007600 : 1.876 sec
+Temps Map sur chunk d'index 207002386 : 1.877 sec
+Temps Map sur chunk d'index 828009551 : 2.005 sec
+Temps Map sur chunk d'index 517506639 : 2.226 sec
+Temps Map sur chunk d'index 931511373 : 1.701 sec
+Temps Map sur chunk d'index 103501122 : 1.946 sec
+Temps Map sur chunk d'index 310503482 : 2.114 sec
+Temps Map sur chunk d'index 724508562 : 1.937 sec
+Temps d'exécution du Reduce en local : 0.171 sec
+
+5Go:
+MapReduce sur 5Go.txt.map 1 seul Reduce, 10 dataNodes
+Temps total d'exécution : 11.589 sec
+Temps total des maps en parallèle : 11.130000114440918 sec
+Temps Map sur chunk d'index 0 : 9.554 sec
+Temps Map sur chunk d'index 1707442740 : 11.076 sec
+Temps Map sur chunk d'index 517505146 : 9.885 sec
+Temps Map sur chunk d'index 672432327 : 9.879 sec
+Temps Map sur chunk d'index 362578040 : 8.64 sec
+Temps Map sur chunk d'index 1552514844 : 10.522 sec
+Temps Map sur chunk d'index 2070019687 : 9.598 sec
+Temps Map sur chunk d'index 1189937287 : 9.537 sec
+Temps Map sur chunk d'index 154926833 : 9.857 sec
+Temps Map sur chunk d'index 1035010044 : 9.586 sec
+Temps d'exécution du Reduce en local : 0.169 sec
+
+100Go:
+MapReduce sur 10Go.txt.map 1 seul Reduce, 10 dataNodes
+Temps total d'exécution : 24.353 sec
+Temps total des maps en parallèle : 23.888999938964844 sec
+Temps Map sur chunk d'index 0 : 19.774 sec
+Temps Map sur chunk d'index 154927560 : 19.284 sec
+Temps Map sur chunk d'index 1035009817 : 19.402 sec
+Temps Map sur chunk d'index 2070019419 : 19.416 sec
+Temps Map sur chunk d'index 309855538 : 19.867 sec
+Temps Map sur chunk d'index 880082046 : 23.811 sec
+Temps Map sur chunk d'index 1915091934 : 19.151 sec
+Temps Map sur chunk d'index 1344865378 : 19.846 sec
+Temps Map sur chunk d'index 1189938224 : 22.656 sec
+Temps Map sur chunk d'index 725154198 : 17.398 sec
+Temps d'exécution du Reduce en local : 0.17 sec
+
+
+MyMapReduce (word count) en séquentiel :
+
+100Mo : 1,729 sec
+500Mo : 1,153 sec
+1Go : 17, 782 sec
+5Go : 86, 685 sec
+10Go : 171, 781 sec

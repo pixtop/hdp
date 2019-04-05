@@ -62,6 +62,8 @@ public class Job extends UnicastRemoteObject implements JobInterface, CallBack {
 			throw new ErreurJobException(e.getMessage());
 		}
 
+		this.analyse.flength = info.getTaille();
+
 		Format reader = null, writer;
 		switch (info.getFormat()) {
 			case KV:

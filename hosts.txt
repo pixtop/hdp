@@ -1,8 +1,7 @@
-pikachu
-luke
 gandalf
 shadowcat
-vador
 magma
-tornade
-sunfire
+c201-06
+c201-08
+c201-09
+c201-10
