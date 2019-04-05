@@ -1,4 +1,8 @@
 pikachu
-piafabec
+luke
 gandalf
 shadowcat
+vador
+magma
+tornade
+sunfire

@@ -1,10 +1,10 @@
 package application;
-/* Note : pour pouvoir fonctionner sans modifications, cette application suppose 
- * l'existence d'un attribut statique PATH d'une classe Projet située dans le répertoire 
- * hidoop/src/config. Cet attribut est supposé contenir le chemin d'accès au répertoire 
+/* Note : pour pouvoir fonctionner sans modifications, cette application suppose
+ * l'existence d'un attribut statique PATH d'une classe Projet située dans le répertoire
+ * hidoop/src/config. Cet attribut est supposé contenir le chemin d'accès au répertoire
  * hidoop (celui qui contient le répertoire applications contenant le présent fichier)
  */
- 
+
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,7 +27,7 @@ public class Count {
             long t1 = System.currentTimeMillis();
 
 			Map<String,Integer> hm = new HashMap<>();
-			LineNumberReader lnr = new LineNumberReader(new InputStreamReader(new FileInputStream("data/"+args[0])));
+			LineNumberReader lnr = new LineNumberReader(new InputStreamReader(new FileInputStream(args[0])));
 			while (true) {
 				String l = lnr.readLine();
 				if (l == null) break;
@@ -38,7 +38,7 @@ public class Count {
 					else hm.put(tok, 1);
 				}
 			}
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("data/count-res")));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("../data/count-res")));
 			for (String k : hm.keySet()) {
 				writer.write(k+"<->"+hm.get(k).toString());
 				writer.newLine();
